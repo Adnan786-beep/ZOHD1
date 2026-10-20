@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "name": "Bamboo Toothbrush",
+    "price": 10,
+    "category": "Oral Care",
+    "image": "images/adult-toothbrush.jpg",
+    "images": ["images/adult-toothbrush.jpg"]
+  },
+  {
+    "id": 2,
+    "name": "Eco Toothpaste",
+    "price": 15,
+    "category": "Oral Care",
+    "image": "images/kids-toothbrush.jpg",
+    "images": ["images/kids-toothbrush.jpg"]
+  }
+]

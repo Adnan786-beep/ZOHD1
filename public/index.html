@@ -305,9 +305,9 @@
   </div>
 
   <!-- AUTH POPUP MODAL -->
-  <div id="auth-modal" class="modal-overlay">
-    <div class="modal-body">
-      <button style="position:absolute; top:1.2rem; right:1.2rem; background:none; border:none; font-size:1.6rem; cursor:pointer;" onclick="closeModal('auth-modal')">&times;</button>
+  <div id="auth-modal" class="modal-overlay" aria-hidden="true">
+    <div class="modal-body" role="dialog" aria-modal="true" aria-label="Customer account">
+      <button type="button" aria-label="Close account dialog" style="position:absolute; top:1.2rem; right:1.2rem; background:none; border:none; font-size:1.6rem; cursor:pointer;" onclick="closeModal('auth-modal')">&times;</button>
       
       <div class="auth-tabs">
         <button class="auth-tab-btn active" id="tab-login-btn" onclick="switchAuthMode('login')">Sign In</button>

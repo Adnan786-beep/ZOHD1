@@ -7,14 +7,14 @@ let productSearchQuery = "";
 
 document.addEventListener("DOMContentLoaded", () => {
   loadProducts();
-  restoreCustomerSession();
-
-  if (!localStorage.getItem("zohd_visited")) {
-    setTimeout(() => {
-      openAuthModal();
-      localStorage.setItem("zohd_visited", "true");
-    }, 1200);
-  }
+  restoreCustomerSession().then(() => {
+    if (!sessionStorage.getItem("zohd_auth_prompted")) {
+      setTimeout(() => {
+        openAuthModal();
+        sessionStorage.setItem("zohd_auth_prompted", "true");
+      }, 1200);
+    }
+  });
 });
 
 async function loadProducts() {
@@ -451,7 +451,7 @@ function checkoutViaWhatsApp() {
 }
 
 function openAuthModal() {
-  const isSignedIn = currentUser && currentUser.id;
+  const isSignedIn = Boolean(currentUser && currentUser.id);
   const summary = document.getElementById("customer-account-summary");
   if (summary) summary.classList.toggle("hidden", !isSignedIn);
   
@@ -466,39 +466,181 @@ function openAuthModal() {
   
   const adminContainer = document.getElementById("admin-login-container");
   if (adminContainer) adminContainer.classList.add("hidden");
-  
+
+  const guestDivider = document.querySelector(".guest-divider-wrapper");
+  if (guestDivider) guestDivider.classList.toggle("hidden", isSignedIn);
+
+  const adminSignin = document.getElementById("customer-admin-signin");
+  if (adminSignin) adminSignin.classList.toggle("hidden", isSignedIn);
+
   if (isSignedIn) {
     const accName = document.getElementById("customer-account-name");
     if (accName) accName.textContent = `Welcome, ${currentUser.name}`;
+    const accIdentifier = document.getElementById("customer-account-identifier");
+    if (accIdentifier) accIdentifier.textContent = currentUser.identifier || "";
   } else {
     switchAuthMode("login");
   }
   
   const modal = document.getElementById("auth-modal");
-  if (modal) modal.classList.add("active");
+  if (modal) {
+    modal.classList.add("active");
+    modal.setAttribute("aria-hidden", "false");
+  }
 }
 
 function closeModal(id) {
   const modal = document.getElementById(id);
-  if (modal) modal.classList.remove("active");
+  if (modal) {
+    modal.classList.remove("active");
+    modal.setAttribute("aria-hidden", "true");
+  }
 }
 
 function switchAuthMode(mode) {
+  const isLogin = mode === "login";
   const loginContainer = document.getElementById("login-form-container");
-  if (loginContainer) loginContainer.classList.toggle("hidden", mode !== 'login');
+  if (loginContainer) loginContainer.classList.toggle("hidden", !isLogin);
   
   const regContainer = document.getElementById("register-form-container");
-  if (regContainer) regContainer.classList.toggle("hidden", mode !== 'register');
+  if (regContainer) regContainer.classList.toggle("hidden", isLogin);
+
+  const loginTab = document.getElementById("tab-login-btn");
+  if (loginTab) loginTab.classList.toggle("active", isLogin);
+  const registerTab = document.getElementById("tab-register-btn");
+  if (registerTab) registerTab.classList.toggle("active", !isLogin);
+
+  ["customer-login-error", "customer-register-error"].forEach(id => {
+    const error = document.getElementById(id);
+    if (error) error.textContent = "";
+  });
 }
 
-function restoreCustomerSession() {
-  console.log('Static mode: Backend session restore skipped.');
+async function handleCustomerAuth(event, mode) {
+  event.preventDefault();
+  const isRegister = mode === "register";
+  const errorElem = document.getElementById(isRegister ? "customer-register-error" : "customer-login-error");
+  const form = event.currentTarget;
+  const submitButton = form.querySelector('button[type="submit"]');
+  const originalButtonText = submitButton.textContent;
+  if (errorElem) errorElem.textContent = "";
+
+  const password = document.getElementById(isRegister ? "reg-password" : "login-password").value;
+  if (isRegister && password !== document.getElementById("reg-confirm-password").value) {
+    if (errorElem) errorElem.textContent = "Passwords do not match.";
+    return;
+  }
+
+  const body = isRegister
+    ? {
+        name: document.getElementById("reg-name").value,
+        identifier: document.getElementById("reg-identifier").value,
+        address: document.getElementById("reg-address").value,
+        location: document.getElementById("reg-location").value,
+        password
+      }
+    : {
+        identifier: document.getElementById("login-id").value,
+        password
+      };
+
+  if (submitButton) {
+    submitButton.disabled = true;
+    submitButton.textContent = isRegister ? "Creating account..." : "Signing in...";
+  }
+
+  try {
+    const response = await fetch(`/api/customer/${mode}`, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    let result;
+    try {
+      result = await response.json();
+    } catch {
+      throw new Error(response.ok
+        ? "The server returned an invalid sign-in response."
+        : `Account request failed (HTTP ${response.status}).`);
+    }
+    if (!response.ok) {
+      throw new Error(result.error || `Account request failed (HTTP ${response.status}).`);
+    }
+    if (!result.customer || !result.customer.id) {
+      throw new Error("The server did not return a valid customer account.");
+    }
+
+    setCurrentCustomer(result.customer);
+    closeModal("auth-modal");
+  } catch (error) {
+    if (errorElem) errorElem.textContent = error.message || "Unable to complete your account request. Please try again.";
+  } finally {
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.textContent = originalButtonText;
+    }
+  }
+}
+
+function setCurrentCustomer(customer) {
+  currentUser = customer;
+  const displayName = document.getElementById("user-display-name");
+  if (displayName) displayName.textContent = customer.name;
+  const accountName = document.getElementById("customer-account-name");
+  if (accountName) accountName.textContent = `Welcome, ${customer.name}`;
+  const accountIdentifier = document.getElementById("customer-account-identifier");
+  if (accountIdentifier) accountIdentifier.textContent = customer.identifier || "";
+}
+
+async function restoreCustomerSession() {
+  try {
+    const response = await fetch("/api/customer/me", { credentials: "same-origin" });
+    if (response.status === 401) return;
+    if (!response.ok) {
+      throw new Error(`Unable to restore customer session (HTTP ${response.status}).`);
+    }
+    const result = await response.json();
+    if (!result.customer || !result.customer.id) {
+      throw new Error("The server returned an invalid customer session.");
+    }
+    setCurrentCustomer(result.customer);
+  } catch (error) {
+    console.error("Unable to restore customer session:", error);
+  }
+}
+
+async function logoutCustomer() {
+  const errorElem = document.getElementById("customer-logout-error");
+  if (errorElem) errorElem.textContent = "";
+  try {
+    const response = await fetch("/api/customer/logout", {
+      method: "POST",
+      credentials: "same-origin"
+    });
+    if (!response.ok) {
+      let message = `Unable to sign out (HTTP ${response.status}).`;
+      try {
+        const result = await response.json();
+        if (result.error) message = result.error;
+      } catch {
+        // Keep the HTTP status message when the server provides no JSON error.
+      }
+      throw new Error(message);
+    }
+    currentUser = null;
+    const displayName = document.getElementById("user-display-name");
+    if (displayName) displayName.textContent = "Login / Register";
+    openAuthModal();
+  } catch (error) {
+    if (errorElem) errorElem.textContent = error.message || "Unable to sign out. Please try again.";
+  }
 }
 
 function continueAsGuest() {
   currentUser = { name: "Guest" };
   const displayName = document.getElementById("user-display-name");
-  if (displayName) displayName.innerText = "Guest";
+  if (displayName) displayName.textContent = "Guest";
   closeModal("auth-modal");
 }
 
@@ -512,6 +654,14 @@ function showAdminSignIn() {
 }
 
 function showCustomerSignIn() {
+  const tabs = document.querySelector(".auth-tabs");
+  if (tabs) tabs.classList.remove("hidden");
+  const guestDivider = document.querySelector(".guest-divider-wrapper");
+  if (guestDivider) guestDivider.classList.remove("hidden");
+  const adminSignin = document.getElementById("customer-admin-signin");
+  if (adminSignin) adminSignin.classList.remove("hidden");
+  const adminContainer = document.getElementById("admin-login-container");
+  if (adminContainer) adminContainer.classList.add("hidden");
   switchAuthMode("login");
 }
 function showAdminSignIn() {
