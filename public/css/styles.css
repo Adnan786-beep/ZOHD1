@@ -693,6 +693,28 @@ body {
   flex-grow: 1;
 }
 
+.product-sku,
+.product-detail-sku {
+  color: var(--text-light);
+  font-size: 0.78rem;
+}
+
+.product-keywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0 0 1rem;
+}
+
+.product-keywords span {
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  background: var(--accent-beige);
+  color: var(--primary-green);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
 .product-detail-open {
   overflow: hidden;
 }

@@ -88,13 +88,28 @@ async function initializeDatabase() {
         PRIMARY KEY (scope, client_key)
       )`;
 
+      const initialProducts = JSON.parse(fs.readFileSync(path.join(ROOT, "data", "products.json"), "utf8"));
       const productCount = await query`SELECT count(*)::integer AS count FROM products`;
       if (productCount[0].count === 0) {
-        const initialProducts = JSON.parse(fs.readFileSync(path.join(ROOT, "data", "products.json"), "utf8"));
         for (const product of initialProducts) {
           await query`INSERT INTO products (id, data)
             VALUES (${product.id}, ${JSON.stringify(product)}::jsonb)
             ON CONFLICT (id) DO NOTHING`;
+        }
+      } else {
+        const existingProducts = await query`SELECT id, data FROM products ORDER BY id`;
+        const isLegacyCatalog = existingProducts.length === 2
+          && existingProducts[0].id === 1
+          && existingProducts[0].data.name === "Bamboo Toothbrush"
+          && existingProducts[1].id === 2
+          && existingProducts[1].data.name === "Eco Toothpaste"
+          && existingProducts.every(product => !product.data.sku);
+        if (isLegacyCatalog) {
+          for (const product of initialProducts) {
+            await query`INSERT INTO products (id, data)
+              VALUES (${product.id}, ${JSON.stringify(product)}::jsonb)
+              ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data`;
+          }
         }
       }
       await query`SELECT setval(

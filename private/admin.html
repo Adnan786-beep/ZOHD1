@@ -648,6 +648,10 @@
             <input id="product-name" name="name" type="text" maxlength="160" autocomplete="off" required />
           </div>
           <div class="form-group">
+            <label for="product-sku">Product SKU</label>
+            <input id="product-sku" name="sku" type="text" maxlength="40" pattern="[A-Za-z0-9-]*" placeholder="e.g. ZOHD-BTB-001" />
+          </div>
+          <div class="form-group">
             <label for="product-category">Category <span aria-hidden="true">*</span></label>
             <input id="product-category" name="category" type="text" maxlength="80" placeholder="e.g. Kids Oral Care" required />
           </div>
@@ -674,8 +678,13 @@
           </div>
           <div class="form-group full-span">
             <label for="product-description">Product description <span aria-hidden="true">*</span></label>
-            <textarea id="product-description" name="description" maxlength="1000" rows="5" required></textarea>
-            <p class="product-form-help">Up to 1,000 characters. Separate paragraphs with a blank line.</p>
+            <textarea id="product-description" name="description" maxlength="5000" rows="7" required></textarea>
+            <p class="product-form-help">Up to 5,000 characters. Use a line containing **Heading** for a section heading.</p>
+          </div>
+          <div class="form-group full-span">
+            <label for="product-keywords">Search keywords</label>
+            <textarea id="product-keywords" name="keywords" maxlength="1619" rows="3" placeholder="One keyword or phrase per line"></textarea>
+            <p class="product-form-help">Up to 20 keywords, one per line. Customers can search products by these phrases.</p>
           </div>
           <div class="form-group full-span">
             <label for="product-images">Product images <span aria-hidden="true">*</span></label>
@@ -976,7 +985,9 @@
       const search = document.getElementById("product-search").value.trim().toLocaleLowerCase();
       const stockFilter = document.getElementById("product-stock-filter").value;
       const filteredProducts = products.filter(product => {
-        const matchesSearch = !search || `${product.name} ${product.category}`.toLocaleLowerCase().includes(search);
+        const matchesSearch = !search
+          || [product.name, product.sku, product.category, ...(product.keywords || [])]
+            .join(" ").toLocaleLowerCase().includes(search);
         const matchesStock = stockFilter === "all"
           || (stockFilter === "low-stock"
             ? Number.isInteger(product.quantity) && product.quantity <= 5
@@ -989,7 +1000,7 @@
       const rows = filteredProducts.map(p => `
         <tr>
           <td>#${p.id}</td>
-          <td><strong>${escapeHtml(p.name)}</strong></td>
+          <td><strong>${escapeHtml(p.name)}</strong>${p.sku ? `<br><small>SKU: ${escapeHtml(p.sku)}</small>` : ""}</td>
           <td>₹${p.price}${p.mrp > p.price ? ` <del>₹${p.mrp}</del>` : ""}</td>
           <td>${escapeHtml(p.category)}</td>
           <td>${inventoryLabel(p)}</td>
@@ -1007,6 +1018,7 @@
             <img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.name)}" loading="lazy" />
             <div class="product-card-content">
               <h4>${escapeHtml(product.name)}</h4>
+              ${product.sku ? `<p>SKU: ${escapeHtml(product.sku)}</p>` : ""}
               <p>${escapeHtml(product.category)}</p>
               <p>${inventoryLabel(product)}</p>
               <p><strong>₹${product.price}</strong>${product.mrp > product.price ? ` <del>₹${product.mrp}</del>` : ""}</p>
@@ -1206,12 +1218,14 @@
       form.reset();
       document.getElementById("product-form-title").textContent = product ? "Edit product" : "Add a product";
       document.getElementById("product-name").value = product?.name || "";
+      document.getElementById("product-sku").value = product?.sku || "";
       document.getElementById("product-category").value = product?.category || "";
       document.getElementById("product-stock").value = product?.stock || "In Stock";
       document.getElementById("product-quantity").value = Number.isInteger(product?.quantity) ? product.quantity : product ? "" : "0";
       document.getElementById("product-price").value = product?.price ?? "";
       document.getElementById("product-mrp").value = product?.mrp ?? "";
       document.getElementById("product-description").value = product?.description || "";
+      document.getElementById("product-keywords").value = (product?.keywords || []).join("\n");
       document.getElementById("product-images").value = (product?.images || (product?.image ? [product.image] : [])).join("\n");
       document.getElementById("product-variants").value = (product?.variants || []).join("\n");
       document.getElementById("product-form-error").textContent = "";
@@ -1268,6 +1282,7 @@
       const mrp = Number(document.getElementById("product-mrp").value);
       const images = document.getElementById("product-images").value.split(/\r?\n/).map(value => value.trim()).filter(Boolean);
       const variants = document.getElementById("product-variants").value.split(/\r?\n/).map(value => value.trim()).filter(Boolean);
+      const keywords = [...new Set(document.getElementById("product-keywords").value.split(/\r?\n/).map(value => value.trim()).filter(Boolean))];
 
       if (mrp < price) {
         error.textContent = "MRP must be equal to or higher than the selling price.";
@@ -1284,9 +1299,16 @@
         document.getElementById("product-variants").focus();
         return;
       }
+      if (keywords.length > 20 || keywords.some(keyword => keyword.length > 80)) {
+        error.textContent = "Add up to 20 keywords, with each keyword no longer than 80 characters.";
+        document.getElementById("product-keywords").focus();
+        return;
+      }
 
       const product = {
         name: document.getElementById("product-name").value.trim(),
+        sku: document.getElementById("product-sku").value.trim(),
+        keywords,
         category: document.getElementById("product-category").value.trim(),
         price,
         mrp,

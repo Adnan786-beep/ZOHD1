@@ -228,7 +228,8 @@ function renderShopCatalog() {
       </div>
       <div class="product-info">
         <h3 style="font-size:1.1rem; margin-bottom:0.4rem;">${escapeHtml(product.name)}</h3>
-        <p style="color:var(--text-light); margin-bottom:0.8rem;">${escapeHtml(product.description.slice(0, 150))}${product.description.length > 150 ? "…" : ""}</p>
+        ${product.sku ? `<p class="product-sku">SKU: ${escapeHtml(product.sku)}</p>` : ""}
+        <p style="color:var(--text-light); margin-bottom:0.8rem;">${escapeHtml((product.description || "").slice(0, 150))}${(product.description || "").length > 150 ? "…" : ""}</p>
         <button type="button" class="product-details-hint" data-product-detail-trigger="${product.id}" onclick="openProductDetails(${product.id})">View full product details</button>
         <p style="font-weight:700; color:var(--primary-green); font-size:1.2rem; margin-bottom:0.8rem;">
           ₹${product.price}
@@ -269,8 +270,13 @@ function openProductDetails(productId) {
     </div>
     <div class="product-detail-info">
       <h2 id="product-detail-heading">${escapeHtml(product.name)}</h2>
+      ${product.sku ? `<p class="product-detail-sku">SKU: ${escapeHtml(product.sku)}</p>` : ""}
       <p class="product-detail-price">₹${product.price} ${product.mrp > product.price ? `<del class="product-mrp">₹${product.mrp}</del>` : ""}</p>
-      <div class="product-detail-description">${product.description.split(/\r?\n+/).map(paragraph => `<p>${escapeHtml(paragraph)}</p>`).join("")}</div>
+      ${product.keywords && product.keywords.length ? `<div class="product-keywords">${product.keywords.map(keyword => `<span>${escapeHtml(keyword)}</span>`).join("")}</div>` : ""}
+      <div class="product-detail-description">${(product.description || "").split(/\r?\n+/).map(paragraph => {
+        const heading = paragraph.match(/^\*\*(.+)\*\*$/);
+        return `<p>${heading ? `<strong>${escapeHtml(heading[1])}</strong>` : escapeHtml(paragraph)}</p>`;
+      }).join("")}</div>
       <div class="form-group">
         <label for="product-detail-variant">Choose Variant</label>
         <select id="product-detail-variant">${product.variants.map(variant => `<option value="${escapeHtml(variant)}" ${variant === selectedVariant ? "selected" : ""}>${escapeHtml(variant)}</option>`).join("")}</select>

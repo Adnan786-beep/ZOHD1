@@ -110,7 +110,14 @@ function updateProductSearchStatus() {
 
 function productMatchesSearch(product) {
   if (!productSearchQuery) return true;
-  const searchableText = [product.name, product.category, product.description, ...(product.variants || [])]
+  const searchableText = [
+    product.name,
+    product.sku,
+    product.category,
+    product.description,
+    ...(product.keywords || []),
+    ...(product.variants || [])
+  ]
     .join(" ")
     .toLocaleLowerCase();
   return searchableText.includes(productSearchQuery);
@@ -165,6 +172,7 @@ function renderProducts(containerId, limit = products.length) {
         </div>
         <div class="product-info">
           <div class="product-title">${escapeHtml(p.name)}</div>
+          ${p.sku ? `<div class="product-sku">SKU: ${escapeHtml(p.sku)}</div>` : ""}
           <div class="product-desc">${escapeHtml((p.description || "").slice(0, 150))}${(p.description || "").length > 150 ? "…" : ""}</div>
           <button type="button" class="product-details-hint" data-product-detail-trigger="${p.id}" onclick="openProductDetails(${p.id}, this)">View full product details</button>
           
@@ -291,13 +299,18 @@ function openProductDetails(productId, trigger = null) {
     <div class="product-detail-info">
       <span class="product-detail-category">${escapeHtml(product.category)}</span>
       <h2 id="product-detail-heading">${escapeHtml(product.name)}</h2>
+      ${product.sku ? `<p class="product-detail-sku">SKU: ${escapeHtml(product.sku)}</p>` : ""}
       <p class="product-detail-price">₹${product.price} ${product.mrp > product.price ? `<del class="product-mrp">₹${product.mrp}</del>` : ""}</p>
+      ${product.keywords && product.keywords.length ? `<p class="product-keywords">${product.keywords.map(keyword => `<span>${escapeHtml(keyword)}</span>`).join("")}</p>` : ""}
       <div class="product-detail-highlights">
         <div class="product-detail-highlight"><i class="fa-solid fa-box-open" aria-hidden="true"></i><span><strong>In this pack</strong><span id="product-detail-pack-summary">${escapeHtml(product.selectedVariant || variants[0] || "Default")}</span></span></div>
         <div class="product-detail-highlight"><i class="fa-solid fa-leaf" aria-hidden="true"></i><span><strong>Material</strong><span>${escapeHtml(materialDetails)}</span></span></div>
         ${isToothbrush ? `<div class="product-detail-highlight"><i class="fa-solid fa-tooth" aria-hidden="true"></i><span><strong>Bristles</strong><span>${escapeHtml(bristleDetails)}</span></span></div>` : ""}
       </div>
-      <div class="product-detail-description">${(product.description || "").split(/\r?\n+/).map(paragraph => `<p>${escapeHtml(paragraph)}</p>`).join("")}</div>
+      <div class="product-detail-description">${(product.description || "").split(/\r?\n+/).map(paragraph => {
+        const heading = paragraph.match(/^\*\*(.+)\*\*$/);
+        return `<p>${heading ? `<strong>${escapeHtml(heading[1])}</strong>` : escapeHtml(paragraph)}</p>`;
+      }).join("")}</div>
       ${variants.length ? `<div class="form-group">
         <label for="product-detail-variant">Choose Variant</label>
         <select id="product-detail-variant">${variants.map(variant => `<option value="${escapeHtml(variant)}" ${variant === product.selectedVariant ? "selected" : ""}>${escapeHtml(variant)}</option>`).join("")}</select>
