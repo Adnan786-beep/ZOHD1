@@ -680,7 +680,7 @@
 
     async function adminLogout() {
       try {
-        const response = await fetch("/admin/logout", {
+        const response = await fetch("/api/admin/logout", {
           method: "POST",
           credentials: "same-origin"
         });

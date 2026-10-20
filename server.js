@@ -452,7 +452,7 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  if (req.method === "POST" && pathname === "/admin/login") {
+  if (req.method === "POST" && (pathname === "/admin/login" || pathname === "/api/admin/login")) {
     const address = loginRateLimit(req, res);
     if (address === null) return;
 
@@ -491,7 +491,7 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  if (req.method === "POST" && pathname === "/admin/logout") {
+  if (req.method === "POST" && (pathname === "/admin/logout" || pathname === "/api/admin/logout")) {
     const session = getSession(req);
     if (session) sessions.delete(session.token);
     const clearCookie = `zohd_admin=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0${COOKIE_SECURE ? "; Secure" : ""}`;

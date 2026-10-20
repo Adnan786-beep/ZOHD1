@@ -703,7 +703,7 @@ if (adminForm) {
     if (errorElem) errorElem.textContent = "";
 
     try {
-      const response = await fetch("/admin/login", {
+      const response = await fetch("/api/admin/login", {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
