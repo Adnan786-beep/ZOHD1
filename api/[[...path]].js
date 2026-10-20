@@ -302,6 +302,7 @@ async function handle(req, res) {
     send(res, 400, "Bad request.");
     return;
   }
+  if (!pathname.startsWith("/api/")) pathname = `/api${pathname}`;
 
   try {
     await initializeDatabase();

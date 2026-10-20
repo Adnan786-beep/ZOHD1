@@ -764,11 +764,17 @@ async function handleCustomerAuth(event, mode) {
     try {
       result = await response.json();
     } catch {
+      if (response.status === 404) {
+        throw new Error("The customer account API was not found. Redeploy the latest site/API files and open the site from that deployment.");
+      }
       throw new Error(response.ok
         ? "The server returned an invalid sign-in response."
         : `Account request failed (HTTP ${response.status}).`);
     }
     if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error("The customer account API was not found. Redeploy the latest site/API files and open the site from that deployment.");
+      }
       throw new Error(result.error || `Account request failed (HTTP ${response.status}).`);
     }
     if (!result.customer || !result.customer.id) {
