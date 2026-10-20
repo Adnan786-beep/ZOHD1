@@ -112,6 +112,19 @@ async function initializeDatabase() {
           }
         }
       }
+      const kidsToothbrushProduct = initialProducts.find(product => product.sku === "ZOHD-BTB-001");
+      if (kidsToothbrushProduct) {
+        await query`UPDATE products
+          SET data = jsonb_set(
+            jsonb_set(data, '{image}', to_jsonb(${kidsToothbrushProduct.image}::text)),
+            '{images}',
+            ${JSON.stringify(kidsToothbrushProduct.images)}::jsonb
+          )
+          WHERE id = ${kidsToothbrushProduct.id}
+            AND data->>'sku' = ${kidsToothbrushProduct.sku}
+            AND data->>'image' = 'images/products/kids-bamboo-toothbrush-set.png'
+            AND data->'images' = '["images/products/kids-bamboo-toothbrush-set.png"]'::jsonb`;
+      }
       await query`SELECT setval(
         pg_get_serial_sequence('products', 'id'),
         GREATEST(COALESCE((SELECT MAX(id) FROM products), 0), 1),

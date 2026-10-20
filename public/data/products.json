@@ -12,8 +12,14 @@
     "price": 123,
     "mrp": 144,
     "category": "Kids Oral Care",
-    "image": "images/products/kids-bamboo-toothbrush-set.png",
-    "images": ["images/products/kids-bamboo-toothbrush-set.png"],
+    "image": "images/products/kids-bamboo-toothbrush-pack-main.png",
+    "images": [
+      "images/products/kids-bamboo-toothbrush-pack-main.png",
+      "images/products/kids-bamboo-toothbrush-pack-lifestyle.png",
+      "images/products/kids-bamboo-toothbrush-pack-bathroom.png",
+      "images/products/kids-bamboo-toothbrush-pack-size-guide.png",
+      "images/products/kids-bamboo-toothbrush-pack-detail.png"
+    ],
     "variants": ["Pack of 2 kids' toothbrushes"],
     "stock": "In Stock",
     "description": "Make everyday oral care simple, gentle, and environmentally conscious with the ZOHD Bamboo Toothbrush Combo for Kids. Specially designed for children's daily brushing routine, these bamboo toothbrushes combine ultra-soft bristles with a lightweight, easy-to-hold handle to help make brushing comfortable and enjoyable. The toothbrushes are suitable for parents looking for a kids' bamboo toothbrush, an eco-friendly toothbrush for children, or a sustainable alternative to conventional plastic toothbrushes.\n\n**Gentle Cleaning for Children's Teeth and Gums**\nChildren need a comfortable toothbrush to develop healthy oral hygiene habits from an early age. The ZOHD Kids Bamboo Toothbrush features ultra-soft BPA-free bristles designed to clean teeth gently while helping remove everyday food particles and surface debris.\n\n**Natural Bamboo Handle for an Eco-Friendly Choice**\nThe ZOHD bamboo toothbrush is designed with a smooth, lightweight handle made from responsibly sourced natural bamboo. Bamboo provides a natural alternative to the plastic handles commonly found in traditional toothbrushes.\n\n**Why Choose the ZOHD Bamboo Toothbrush Combo for Kids?**\n• Kids' bamboo toothbrush designed for daily oral hygiene.\n• Ultra-soft BPA-free bristles for gentle brushing.\n• Smooth, lightweight handle made from responsibly sourced natural bamboo.\n• Comfortable grip designed for smaller hands.\n• Eco-friendly alternative to conventional plastic toothbrush handles."
