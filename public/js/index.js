@@ -514,3 +514,31 @@ function showAdminSignIn() {
 function showCustomerSignIn() {
   switchAuthMode("login");
 }
+function showAdminSignIn() {
+  const summary = document.getElementById("customer-account-summary");
+  if (summary) summary.classList.add("hidden");
+
+  const tabs = document.querySelector(".auth-tabs");
+  if (tabs) tabs.classList.add("hidden");
+
+  const loginContainer = document.getElementById("login-form-container");
+  if (loginContainer) loginContainer.classList.add("hidden");
+
+  const regContainer = document.getElementById("register-form-container");
+  if (regContainer) regContainer.classList.add("hidden");
+
+  const guestDivider = document.querySelector(".guest-divider-wrapper");
+  if (guestDivider) guestDivider.classList.add("hidden");
+
+  const customerSigninBtn = document.getElementById("customer-admin-signin");
+  if (customerSigninBtn) customerSigninBtn.classList.add("hidden");
+
+  const adminContainer = document.getElementById("admin-login-container");
+  if (adminContainer) adminContainer.classList.remove("hidden");
+
+  const adminError = document.getElementById("main-admin-error");
+  if (adminError) adminError.textContent = "";
+
+  const modal = document.getElementById("auth-modal");
+  if (modal) modal.classList.add("active");
+}
