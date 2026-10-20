@@ -544,21 +544,39 @@ function showAdminSignIn() {
 }
 const adminForm = document.getElementById("main-admin-login-form");
 if (adminForm) {
-  adminForm.addEventListener("submit", (event) => {
+  adminForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const adminIdInput = document.getElementById("main-admin-id");
     const passwordInput = document.getElementById("main-admin-password");
     const errorElem = document.getElementById("main-admin-error");
+    if (errorElem) errorElem.textContent = "";
 
-    if (adminIdInput.value === "admin" && passwordInput.value === "admin123") {
-      if (errorElem) errorElem.textContent = "";
-      closeModal("auth-modal");
-      
-      // Explicit redirect to admin.html in the public root folder
-      window.location.assign("/admin.html");
-    } else {
-      if (errorElem) errorElem.textContent = "Invalid admin ID or password.";
+    try {
+      const response = await fetch("/admin/login", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          adminId: adminIdInput.value,
+          password: passwordInput.value
+        })
+      });
+
+      if (!response.ok) {
+        let message = "Unable to sign in to the admin portal.";
+        try {
+          const result = await response.json();
+          if (result.error) message = result.error;
+        } catch {
+          message = `Admin sign-in failed (HTTP ${response.status}).`;
+        }
+        throw new Error(message);
+      }
+
+      window.location.assign("/admin/dashboard");
+    } catch (error) {
+      if (errorElem) errorElem.textContent = error.message;
     }
   });
 }
