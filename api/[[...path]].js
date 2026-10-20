@@ -4,7 +4,13 @@ const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 const { neon } = require("@neondatabase/serverless");
-const { normalizeCustomerIdentifier, validateCustomerRegistration, validateProduct } = require("../lib/validation");
+const {
+  normalizeCustomerIdentifier,
+  normalizeDeliveryAreas,
+  validateCustomerRegistration,
+  validateProduct,
+  validateProductReview
+} = require("../lib/validation");
 
 const ROOT = path.join(__dirname, "..");
 const ORDER_STATUSES = [
@@ -49,6 +55,20 @@ async function initializeDatabase() {
       )`;
       await query`CREATE INDEX IF NOT EXISTS orders_created_at_idx ON orders (created_at DESC)`;
       await query`CREATE INDEX IF NOT EXISTS orders_status_idx ON orders (status)`;
+      await query`CREATE TABLE IF NOT EXISTS product_reviews (
+        id uuid PRIMARY KEY,
+        product_id integer NOT NULL,
+        customer_id uuid NOT NULL REFERENCES customers (id) ON DELETE CASCADE,
+        created_at timestamptz NOT NULL,
+        status text NOT NULL CHECK (status IN ('pending', 'approved', 'rejected')),
+        data jsonb NOT NULL,
+        UNIQUE (product_id, customer_id)
+      )`;
+      await query`CREATE INDEX IF NOT EXISTS product_reviews_product_status_idx ON product_reviews (product_id, status)`;
+      await query`CREATE TABLE IF NOT EXISTS store_settings (
+        key text PRIMARY KEY,
+        value jsonb NOT NULL
+      )`;
       await query`CREATE TABLE IF NOT EXISTS newsletter_subscribers (
         email text PRIMARY KEY,
         subscribed_at timestamptz NOT NULL
@@ -457,6 +477,106 @@ async function handle(req, res) {
       return;
     }
 
+    if (req.method === "GET" && pathname === "/api/customer/orders") {
+      const session = await getSession(req, "customer");
+      if (!session) {
+        sendJson(res, 401, { error: "Customer authentication required." });
+        return;
+      }
+      const rows = await database()`SELECT data FROM orders
+        WHERE data->'customer'->>'id' = ${session.customerId}
+        ORDER BY created_at DESC`;
+      sendJson(res, 200, rows.map(row => row.data));
+      return;
+    }
+
+    if (req.method === "GET" && pathname === "/api/delivery-areas") {
+      const pincode = new URL(req.url, "https://vercel.local").searchParams.get("pincode") || "";
+      if (!/^\d{6}$/.test(pincode)) {
+        sendJson(res, 400, { error: "Enter a valid six-digit PIN code." });
+        return;
+      }
+      const rows = await database()`SELECT value FROM store_settings WHERE key = 'delivery_areas'`;
+      const areas = rows.length && Array.isArray(rows[0].value) ? rows[0].value : [];
+      const area = areas.find(entry => entry.pincode === pincode);
+      sendJson(res, 200, { available: Boolean(area), area: area ? area.area : null });
+      return;
+    }
+
+    const productReviewsRoute = pathname.match(/^\/api\/products\/(\d+)\/reviews$/);
+    if (productReviewsRoute) {
+      const productId = Number(productReviewsRoute[1]);
+      const products = await getProducts();
+      if (!products.some(product => product.id === productId)) {
+        sendJson(res, 404, { error: "Product not found." });
+        return;
+      }
+      if (req.method === "GET") {
+        const rows = await database()`SELECT data FROM product_reviews
+          WHERE product_id = ${productId} AND status = 'approved'
+          ORDER BY created_at DESC`;
+        const approved = rows.map(row => row.data);
+        const average = approved.length
+          ? Number((approved.reduce((sum, review) => sum + review.rating, 0) / approved.length).toFixed(1))
+          : null;
+        sendJson(res, 200, { average, count: approved.length, reviews: approved });
+        return;
+      }
+      if (req.method !== "POST") {
+        sendJson(res, 405, { error: "Method not allowed." });
+        return;
+      }
+      const session = await getSession(req, "customer");
+      if (!session) {
+        sendJson(res, 401, { error: "Sign in with the account used for your order to leave a review." });
+        return;
+      }
+      let input;
+      try {
+        input = await readJson(req);
+      } catch (error) {
+        sendJson(res, 400, { error: error.message });
+        return;
+      }
+      const validation = validateProductReview(input);
+      if (validation.error) {
+        sendJson(res, 400, { error: validation.error });
+        return;
+      }
+      const customerRows = await database()`SELECT data FROM customers WHERE id = ${session.customerId}`;
+      const customer = customerRows.length ? customerRows[0].data : null;
+      const purchased = await database()`SELECT id FROM orders
+        WHERE data->'customer'->>'id' = ${session.customerId}
+          AND status != 'Cancelled'
+          AND data->'items' @> ${JSON.stringify([{ productId }])}::jsonb
+        LIMIT 1`;
+      if (!customer || !purchased.length) {
+        sendJson(res, 403, { error: "Only customers who ordered this product can review it." });
+        return;
+      }
+      const review = {
+        id: crypto.randomUUID(),
+        productId,
+        customerId: customer.id,
+        customerName: customer.name,
+        ...validation.review,
+        status: "pending",
+        createdAt: new Date().toISOString()
+      };
+      try {
+        await database()`INSERT INTO product_reviews (id, product_id, customer_id, created_at, status, data)
+          VALUES (${review.id}, ${productId}, ${customer.id}, ${review.createdAt}, ${review.status}, ${JSON.stringify(review)}::jsonb)`;
+      } catch (error) {
+        if (error.code === "23505") {
+          sendJson(res, 409, { error: "You have already reviewed this product." });
+          return;
+        }
+        throw error;
+      }
+      sendJson(res, 201, { review });
+      return;
+    }
+
     if (req.method === "POST" && pathname === "/api/orders") {
       const session = await getSession(req, "customer");
       if (!session) {
@@ -491,11 +611,19 @@ async function handle(req, res) {
           return;
         }
         const product = products.find(entry => entry.id === item.productId);
-        if (!product || !product.variants.includes(item.variant)) {
+        if (!product) {
           sendJson(res, 400, { error: "A product or variant in your bag is no longer available. Refresh the catalog and try again." });
           return;
         }
-        if (product.stock !== "In Stock") {
+        const productVariants = Array.isArray(product.variants) && product.variants.length
+          ? product.variants
+          : ["Standard"];
+        const variant = item.variant || productVariants[0];
+        if (!productVariants.includes(variant)) {
+          sendJson(res, 400, { error: "A product or variant in your bag is no longer available. Refresh the catalog and try again." });
+          return;
+        }
+        if (product.stock === "Out of Stock") {
           sendJson(res, 409, { error: `${product.name} is currently out of stock.` });
           return;
         }
@@ -508,7 +636,7 @@ async function handle(req, res) {
         orderItems.push({
           productId: product.id,
           name: product.name,
-          variant: item.variant,
+          variant,
           unitPrice: product.price,
           quantity: item.quantity,
           lineTotal
@@ -560,6 +688,86 @@ async function handle(req, res) {
       } else {
         sendJson(res, 405, { error: "Method not allowed." });
       }
+      return;
+    }
+
+    if (pathname === "/api/admin/reviews") {
+      if (!(await getSession(req, "admin"))) {
+        sendJson(res, 401, { error: "Admin authentication required." });
+        return;
+      }
+      if (req.method === "GET") {
+        const rows = await database()`SELECT data FROM product_reviews ORDER BY created_at DESC`;
+        sendJson(res, 200, rows.map(row => row.data));
+      } else {
+        sendJson(res, 405, { error: "Method not allowed." });
+      }
+      return;
+    }
+
+    const reviewModerationRoute = pathname.match(/^\/api\/admin\/reviews\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i);
+    if (reviewModerationRoute) {
+      if (!(await getSession(req, "admin"))) {
+        sendJson(res, 401, { error: "Admin authentication required." });
+        return;
+      }
+      if (req.method !== "PUT") {
+        sendJson(res, 405, { error: "Method not allowed." });
+        return;
+      }
+      let input;
+      try {
+        input = await readJson(req);
+      } catch (error) {
+        sendJson(res, 400, { error: error.message });
+        return;
+      }
+      if (!input || !["approved", "rejected"].includes(input.status)) {
+        sendJson(res, 400, { error: "Choose approved or rejected." });
+        return;
+      }
+      const rows = await database()`SELECT data FROM product_reviews WHERE id = ${reviewModerationRoute[1]}`;
+      if (!rows.length) {
+        sendJson(res, 404, { error: "Review not found." });
+        return;
+      }
+      const review = { ...rows[0].data, status: input.status, updatedAt: new Date().toISOString() };
+      await database()`UPDATE product_reviews SET status = ${review.status}, data = ${JSON.stringify(review)}::jsonb
+        WHERE id = ${review.id}`;
+      sendJson(res, 200, review);
+      return;
+    }
+
+    if (pathname === "/api/admin/delivery-areas") {
+      if (!(await getSession(req, "admin"))) {
+        sendJson(res, 401, { error: "Admin authentication required." });
+        return;
+      }
+      if (req.method === "GET") {
+        const rows = await database()`SELECT value FROM store_settings WHERE key = 'delivery_areas'`;
+        sendJson(res, 200, rows.length && Array.isArray(rows[0].value) ? rows[0].value : []);
+        return;
+      }
+      if (req.method !== "PUT") {
+        sendJson(res, 405, { error: "Method not allowed." });
+        return;
+      }
+      let input;
+      try {
+        input = await readJson(req);
+      } catch (error) {
+        sendJson(res, 400, { error: error.message });
+        return;
+      }
+      const validation = normalizeDeliveryAreas(input && input.areas);
+      if (validation.error) {
+        sendJson(res, 400, { error: validation.error });
+        return;
+      }
+      await database()`INSERT INTO store_settings (key, value)
+        VALUES ('delivery_areas', ${JSON.stringify(validation.areas)}::jsonb)
+        ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`;
+      sendJson(res, 200, validation.areas);
       return;
     }
 

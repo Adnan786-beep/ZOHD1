@@ -4,12 +4,15 @@ const crypto = require("node:crypto");
 const fs = require("node:fs");
 const http = require("node:http");
 const path = require("node:path");
+const { normalizeDeliveryAreas, validateProductReview } = require("./lib/validation");
 
 const ROOT = __dirname;
 const CATALOG_PATH = path.join(ROOT, "data", "products.json");
 const CUSTOMERS_PATH = path.join(ROOT, "data", "customers.json");
 const ORDERS_PATH = path.join(ROOT, "data", "orders.json");
 const NEWSLETTER_PATH = path.join(ROOT, "data", "newsletter-subscribers.json");
+const REVIEWS_PATH = path.join(ROOT, "data", "reviews.json");
+const DELIVERY_AREAS_PATH = path.join(ROOT, "data", "delivery-areas.json");
 const ORDER_STATUSES = [
   "Awaiting WhatsApp confirmation",
   "Confirmed",
@@ -40,6 +43,8 @@ let products = loadProducts();
 let customers = loadCustomers();
 let orders = loadOrders();
 let newsletterSubscribers = loadNewsletterSubscribers();
+let reviews = loadJsonArray(REVIEWS_PATH, "review");
+let deliveryAreas = loadJsonArray(DELIVERY_AREAS_PATH, "delivery area");
 
 function loadCustomers() {
   const loadedCustomers = JSON.parse(fs.readFileSync(CUSTOMERS_PATH, "utf8"));
@@ -63,6 +68,33 @@ function loadNewsletterSubscribers() {
     throw new Error("The newsletter subscriber file must contain a JSON array.");
   }
   return loadedSubscribers;
+}
+
+function loadJsonArray(filePath, label) {
+  const loaded = JSON.parse(fs.readFileSync(filePath, "utf8"));
+  if (!Array.isArray(loaded)) throw new Error(`The ${label} file must contain a JSON array.`);
+  return loaded;
+}
+
+function saveJsonArray(filePath, nextValues) {
+  const temporaryPath = `${filePath}.${crypto.randomBytes(8).toString("hex")}.tmp`;
+  fs.writeFileSync(temporaryPath, `${JSON.stringify(nextValues, null, 2)}\n`, { flag: "wx" });
+  try {
+    fs.renameSync(temporaryPath, filePath);
+  } catch (error) {
+    fs.rmSync(temporaryPath, { force: true });
+    throw error;
+  }
+}
+
+function saveReviews(nextReviews) {
+  saveJsonArray(REVIEWS_PATH, nextReviews);
+  reviews = nextReviews;
+}
+
+function saveDeliveryAreas(nextAreas) {
+  saveJsonArray(DELIVERY_AREAS_PATH, nextAreas);
+  deliveryAreas = nextAreas;
 }
 
 function saveOrders(nextOrders) {
@@ -643,6 +675,96 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (req.method === "GET" && pathname === "/api/customer/orders") {
+    const session = getCustomerSession(req);
+    if (!session) {
+      sendJson(res, 401, { error: "Customer authentication required." });
+      return;
+    }
+    sendJson(res, 200, orders.filter(order => order.customer.id === session.session.customerId));
+    return;
+  }
+
+  if (req.method === "GET" && pathname === "/api/delivery-areas") {
+    const pincode = new URL(req.url, "http://localhost").searchParams.get("pincode") || "";
+    if (!/^\d{6}$/.test(pincode)) {
+      sendJson(res, 400, { error: "Enter a valid six-digit PIN code." });
+      return;
+    }
+    const area = deliveryAreas.find(entry => entry.pincode === pincode);
+    sendJson(res, 200, { available: Boolean(area), area: area ? area.area : null });
+    return;
+  }
+
+  const productReviewsRoute = pathname.match(/^\/api\/products\/(\d+)\/reviews$/);
+  if (productReviewsRoute) {
+    const productId = Number(productReviewsRoute[1]);
+    if (!products.some(product => product.id === productId)) {
+      sendJson(res, 404, { error: "Product not found." });
+      return;
+    }
+    if (req.method === "GET") {
+      const approved = reviews.filter(review => review.productId === productId && review.status === "approved");
+      const average = approved.length
+        ? Number((approved.reduce((sum, review) => sum + review.rating, 0) / approved.length).toFixed(1))
+        : null;
+      sendJson(res, 200, { average, count: approved.length, reviews: approved });
+      return;
+    }
+    if (req.method !== "POST") {
+      sendJson(res, 405, { error: "Method not allowed." });
+      return;
+    }
+    const session = getCustomerSession(req);
+    const customer = session && customers.find(account => account.id === session.session.customerId);
+    if (!customer) {
+      sendJson(res, 401, { error: "Sign in with the account used for your order to leave a review." });
+      return;
+    }
+    let input;
+    try {
+      input = await readJson(req);
+    } catch (error) {
+      sendJson(res, 400, { error: error.message });
+      return;
+    }
+    const validation = validateProductReview(input);
+    if (validation.error) {
+      sendJson(res, 400, { error: validation.error });
+      return;
+    }
+    const hasPurchased = orders.some(order =>
+      order.customer.id === customer.id
+      && order.status !== "Cancelled"
+      && order.items.some(item => item.productId === productId)
+    );
+    if (!hasPurchased) {
+      sendJson(res, 403, { error: "Only customers who ordered this product can review it." });
+      return;
+    }
+    if (reviews.some(review => review.productId === productId && review.customerId === customer.id)) {
+      sendJson(res, 409, { error: "You have already reviewed this product." });
+      return;
+    }
+    const review = {
+      id: crypto.randomUUID(),
+      productId,
+      customerId: customer.id,
+      customerName: customer.name,
+      ...validation.review,
+      status: "pending",
+      createdAt: new Date().toISOString()
+    };
+    try {
+      saveReviews([review, ...reviews]);
+      sendJson(res, 201, { review });
+    } catch (error) {
+      console.error("Failed to save product review:", error);
+      sendJson(res, 500, { error: "Unable to submit your review. Please try again." });
+    }
+    return;
+  }
+
   if (req.method === "POST" && pathname === "/api/orders") {
     const session = getCustomerSession(req);
     const customer = session && customers.find(account => account.id === session.session.customerId);
@@ -675,11 +797,19 @@ const server = http.createServer(async (req, res) => {
       }
 
       const product = products.find(entry => entry.id === item.productId);
-      if (!product || !product.variants.includes(item.variant)) {
+      if (!product) {
         sendJson(res, 400, { error: "A product or variant in your bag is no longer available. Refresh the catalog and try again." });
         return;
       }
-      if (product.stock !== "In Stock") {
+      const productVariants = Array.isArray(product.variants) && product.variants.length
+        ? product.variants
+        : ["Standard"];
+      const variant = item.variant || productVariants[0];
+      if (!productVariants.includes(variant)) {
+        sendJson(res, 400, { error: "A product or variant in your bag is no longer available. Refresh the catalog and try again." });
+        return;
+      }
+      if (product.stock === "Out of Stock") {
         sendJson(res, 409, { error: `${product.name} is currently out of stock.` });
         return;
       }
@@ -693,7 +823,7 @@ const server = http.createServer(async (req, res) => {
       orderItems.push({
         productId: product.id,
         name: product.name,
-        variant: item.variant,
+        variant,
         unitPrice: product.price,
         quantity: item.quantity,
         lineTotal
@@ -748,6 +878,84 @@ const server = http.createServer(async (req, res) => {
       return;
     }
     sendJson(res, 405, { error: "Method not allowed." });
+    return;
+  }
+
+  if (pathname === "/api/admin/reviews") {
+    if (!requireAdmin(req, res)) return;
+    if (req.method === "GET") {
+      sendJson(res, 200, reviews);
+      return;
+    }
+    sendJson(res, 405, { error: "Method not allowed." });
+    return;
+  }
+
+  const reviewModerationRoute = pathname.match(/^\/api\/admin\/reviews\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i);
+  if (reviewModerationRoute) {
+    if (!requireAdmin(req, res)) return;
+    if (req.method !== "PUT") {
+      sendJson(res, 405, { error: "Method not allowed." });
+      return;
+    }
+    let input;
+    try {
+      input = await readJson(req);
+    } catch (error) {
+      sendJson(res, 400, { error: error.message });
+      return;
+    }
+    if (!input || !["approved", "rejected"].includes(input.status)) {
+      sendJson(res, 400, { error: "Choose approved or rejected." });
+      return;
+    }
+    const index = reviews.findIndex(review => review.id === reviewModerationRoute[1]);
+    if (index < 0) {
+      sendJson(res, 404, { error: "Review not found." });
+      return;
+    }
+    const updated = { ...reviews[index], status: input.status, updatedAt: new Date().toISOString() };
+    const nextReviews = [...reviews];
+    nextReviews[index] = updated;
+    try {
+      saveReviews(nextReviews);
+      sendJson(res, 200, updated);
+    } catch (error) {
+      console.error("Failed to moderate product review:", error);
+      sendJson(res, 500, { error: "Unable to update the review." });
+    }
+    return;
+  }
+
+  if (pathname === "/api/admin/delivery-areas") {
+    if (!requireAdmin(req, res)) return;
+    if (req.method === "GET") {
+      sendJson(res, 200, deliveryAreas);
+      return;
+    }
+    if (req.method !== "PUT") {
+      sendJson(res, 405, { error: "Method not allowed." });
+      return;
+    }
+    let input;
+    try {
+      input = await readJson(req);
+    } catch (error) {
+      sendJson(res, 400, { error: error.message });
+      return;
+    }
+    const validation = normalizeDeliveryAreas(input && input.areas);
+    if (validation.error) {
+      sendJson(res, 400, { error: validation.error });
+      return;
+    }
+    try {
+      saveDeliveryAreas(validation.areas);
+      sendJson(res, 200, deliveryAreas);
+    } catch (error) {
+      console.error("Failed to save delivery areas:", error);
+      sendJson(res, 500, { error: "Unable to save delivery areas." });
+    }
     return;
   }
 

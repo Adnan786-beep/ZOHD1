@@ -2,6 +2,7 @@ let products = [];
 let cart = [];
 let savedCart = loadSavedCart();
 let currentUser = null;
+let customerOrders = [];
 let productDetailsTrigger = null;
 let productSearchQuery = "";
 
@@ -199,6 +200,37 @@ async function subscribeToNewsletter(event) {
   form.reset();
 }
 
+async function checkDeliveryArea(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const pincode = form.elements.pincode.value.trim();
+  const resultElement = document.getElementById("delivery-check-result");
+  const submit = form.querySelector('button[type="submit"]');
+  resultElement.textContent = "Checking…";
+  submit.disabled = true;
+  try {
+    const response = await fetch(`/api/delivery-areas?pincode=${encodeURIComponent(pincode)}`);
+    let result;
+    try {
+      result = await response.json();
+    } catch {
+      throw new Error(`Unable to check delivery (HTTP ${response.status}).`);
+    }
+    if (!response.ok) throw new Error(result.error || `Unable to check delivery (HTTP ${response.status}).`);
+    resultElement.textContent = result.available
+      ? `Delivery is available in ${result.area} (${pincode}).`
+      : `Delivery is not currently available for ${pincode}. Please contact us to confirm.`;
+    resultElement.classList.toggle("delivery-available", result.available);
+    resultElement.classList.toggle("delivery-unavailable", !result.available);
+  } catch (error) {
+    resultElement.textContent = error.message || "Unable to check delivery. Please try again.";
+    resultElement.classList.remove("delivery-available");
+    resultElement.classList.add("delivery-unavailable");
+  } finally {
+    submit.disabled = false;
+  }
+}
+
 document.querySelectorAll("#product-grid-container, #home-product-grid").forEach(container => {
   container.addEventListener("click", event => {
     const thumbnail = event.target.closest("[data-product-id][data-image-index]");
@@ -271,7 +303,29 @@ function openProductDetails(productId, trigger = null) {
         <select id="product-detail-variant">${variants.map(variant => `<option value="${escapeHtml(variant)}" ${variant === product.selectedVariant ? "selected" : ""}>${escapeHtml(variant)}</option>`).join("")}</select>
       </div>` : ""}
       <button type="button" class="btn btn-primary full-width product-detail-add" ${product.stock === "Out of Stock" ? "disabled" : ""}>Add to Bag</button>
-    </div>`;
+    </div>
+    <section class="product-reviews" aria-labelledby="product-reviews-heading" data-review-product-id="${productId}">
+      <div class="product-reviews-heading">
+        <div><h3 id="product-reviews-heading">Customer reviews</h3><p class="product-review-summary">Loading reviews…</p></div>
+      </div>
+      <div class="product-review-list"></div>
+      ${currentUser && currentUser.id ? `<form class="product-review-form">
+        <label for="product-review-rating">Your rating</label>
+        <select id="product-review-rating" name="rating" required>
+          <option value="">Choose a rating</option>
+          <option value="5">★★★★★ — Excellent</option>
+          <option value="4">★★★★☆ — Very good</option>
+          <option value="3">★★★☆☆ — Good</option>
+          <option value="2">★★☆☆☆ — Fair</option>
+          <option value="1">★☆☆☆☆ — Poor</option>
+        </select>
+        <label for="product-review-text">Your review</label>
+        <textarea id="product-review-text" name="text" minlength="10" maxlength="1000" rows="3" placeholder="Share your experience (10–1,000 characters)" required></textarea>
+        <button class="btn btn-outline" type="submit">Submit review</button>
+        <p class="product-review-status" role="status" aria-live="polite"></p>
+      </form>` : `<p class="product-review-signin"><button type="button" class="review-signin-btn">Sign in to review a product you ordered</button></p>`}
+    </section>`;
+  const detailContent = modal.querySelector(".product-detail-content");
 
   const variantSelect = modal.querySelector("#product-detail-variant");
   if (variantSelect) {
@@ -281,18 +335,31 @@ function openProductDetails(productId, trigger = null) {
     });
   }
   
-  modal.querySelector(".product-detail-content").onclick = event => {
+  detailContent.onclick = event => {
     const thumbnail = event.target.closest("[data-detail-image-index]");
-    if (!thumbnail) return;
-    const image = images[Number(thumbnail.dataset.detailImageIndex)];
-    if (!image) return;
-    modal.querySelector(".product-detail-image").src = image;
-    modal.querySelectorAll("[data-detail-image-index]").forEach(button => {
-      const selected = button === thumbnail;
-      button.classList.toggle("active", selected);
-      button.setAttribute("aria-pressed", String(selected));
-    });
+    if (thumbnail) {
+      const image = images[Number(thumbnail.dataset.detailImageIndex)];
+      if (!image) return;
+      modal.querySelector(".product-detail-image").src = image;
+      modal.querySelectorAll("[data-detail-image-index]").forEach(button => {
+        const selected = button === thumbnail;
+        button.classList.toggle("active", selected);
+        button.setAttribute("aria-pressed", String(selected));
+      });
+      return;
+    }
+    if (event.target.closest(".review-signin-btn")) {
+      closeProductDetails();
+      openAuthModal();
+      switchAuthMode("login");
+    }
   };
+
+  const reviewForm = detailContent.querySelector(".product-review-form");
+  if (reviewForm) {
+    reviewForm.addEventListener("submit", event => submitProductReview(event, productId));
+  }
+  loadProductReviews(productId, detailContent);
   
   modal.querySelector(".product-detail-add").onclick = () => {
     const selectedVar = variantSelect ? variantSelect.value : (product.selectedVariant || "");
@@ -305,6 +372,74 @@ function openProductDetails(productId, trigger = null) {
   document.body.classList.add("product-detail-open");
   const closeBtn = modal.querySelector(".product-detail-close");
   if (closeBtn) closeBtn.focus();
+}
+
+async function loadProductReviews(productId, detailContent) {
+  try {
+    const response = await fetch(`/api/products/${productId}/reviews`);
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || `Unable to load reviews (HTTP ${response.status}).`);
+    const reviewsSection = detailContent.querySelector(".product-reviews");
+    if (!reviewsSection || Number(reviewsSection.dataset.reviewProductId) !== productId) return;
+    const summary = reviewsSection.querySelector(".product-review-summary");
+    const list = reviewsSection.querySelector(".product-review-list");
+    if (summary) {
+      summary.textContent = result.count
+        ? `${result.average} out of 5 · ${result.count} ${result.count === 1 ? "review" : "reviews"}`
+        : "No approved reviews yet.";
+    }
+    if (list) {
+      list.innerHTML = result.reviews.length
+        ? result.reviews.map(review => `
+          <article class="product-review">
+            <div class="product-review-stars" aria-label="${review.rating} out of 5 stars">${"★".repeat(review.rating)}${"☆".repeat(5 - review.rating)}</div>
+            <p>${escapeHtml(review.text)}</p>
+            <small>${escapeHtml(review.customerName)} · Verified order</small>
+          </article>
+        `).join("")
+        : `<p class="product-review-empty">Reviews from verified customers will appear here after approval.</p>`;
+    }
+  } catch (error) {
+    const summary = detailContent.querySelector(".product-review-summary");
+    if (summary) summary.textContent = error.message;
+  }
+}
+
+async function submitProductReview(event, productId) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const status = form.querySelector(".product-review-status");
+  const submit = form.querySelector('button[type="submit"]');
+  status.textContent = "";
+  submit.disabled = true;
+  try {
+    const response = await fetch(`/api/products/${productId}/reviews`, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        rating: Number(form.elements.rating.value),
+        text: form.elements.text.value
+      })
+    });
+    const result = await response.json();
+    if (!response.ok)     if (response.status === 401) {
+      currentUser = null;
+      const displayName = document.getElementById("user-display-name");
+      if (displayName) displayName.textContent = "Login / Register";
+      closeProductDetails();
+      openAuthModal();
+      const loginError = document.getElementById("customer-login-error");
+      if (loginError) loginError.textContent = result.error || "Please sign in again to submit your review.";
+    }
+    throw new Error(result.error || `Unable to submit review (HTTP ${response.status}).`);
+    form.reset();
+    status.textContent = "Thanks! Your review is waiting for approval.";
+  } catch (error) {
+    status.textContent = error.message || "Unable to submit review. Please try again.";
+  } finally {
+    submit.disabled = false;
+  }
 }
 
 function closeProductDetails() {
@@ -433,21 +568,89 @@ function toggleCart(open = null) {
   }
 }
 
-function checkoutViaWhatsApp() {
-  if (cart.length === 0) return alert("Your shopping bag is empty!");
+async function checkoutViaWhatsApp() {
+  const status = document.getElementById("checkout-status");
+  if (cart.length === 0) {
+    if (status) status.textContent = "Your shopping bag is empty.";
+    return;
+  }
+  if (!currentUser || !currentUser.id) {
+    if (status) status.textContent = "Please sign in before placing an order so we can save your order and delivery details.";
+    toggleCart(false);
+    openAuthModal();
+    switchAuthMode("login");
+    return;
+  }
 
-  let msg = `Hi ZOHD Team! I would like to place an order:\n\n`;
-  cart.forEach((item, index) => {
-    msg += `${index + 1}. *${item.name}*\n   • Variant: ${item.variant}\n   • Qty: ${item.quantity}\n   • Price: ₹${item.price * item.quantity}\n\n`;
-  });
-  
-  const subtotal = cart.reduce((s, i) => s + (i.price * i.quantity), 0);
-  msg += `*Subtotal:* ₹${subtotal}\n\nPlease confirm payment details. Thank you!`;
+  if (status) status.textContent = "";
+  const whatsAppWindow = window.open("about:blank", "_blank");
+  const button = document.querySelector("#cart-drawer .btn-whatsapp");
+  if (button) {
+    button.disabled = true;
+    button.dataset.originalHtml = button.innerHTML;
+    button.textContent = "Saving your order…";
+  }
+  try {
+    const response = await fetch("/api/orders", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        items: cart.map(item => ({
+          productId: item.id,
+          variant: item.variant,
+          quantity: item.quantity
+        }))
+      })
+    });
+    let result;
+    try {
+      result = await response.json();
+    } catch {
+      throw new Error(`Unable to save your order (HTTP ${response.status}).`);
+    }
+    if (!response.ok) {
+      if (response.status === 401) {
+        currentUser = null;
+        const displayName = document.getElementById("user-display-name");
+        if (displayName) displayName.textContent = "Login / Register";
+        openAuthModal();
+        const loginError = document.getElementById("customer-login-error");
+        if (loginError) loginError.textContent = result.error || "Please sign in again to place your order.";
+      }
+      throw new Error(result.error || `Unable to save your order (HTTP ${response.status}).`);
+    }
+    if (!result.order || !result.order.orderNumber) {
+      throw new Error("The server did not return an order confirmation.");
+    }
 
-  cart = [];
-  saveCart();
-  const whatsappUrl = `https://wa.me/918655903153?text=${encodeURIComponent(msg)}`;
-  window.open(whatsappUrl, "_blank");
+    const order = result.order;
+    let message = `Hi ZOHD Team! I have placed order *${order.orderNumber}*:\n\n`;
+    order.items.forEach((item, index) => {
+      message += `${index + 1}. *${item.name}*\n   Variant: ${item.variant}\n   Qty: ${item.quantity}\n   Price: ₹${item.lineTotal}\n\n`;
+    });
+    message += `*Subtotal:* ₹${order.subtotal}\n*Deliver to:* ${order.customer.address}, ${order.customer.location}\n\nPlease confirm my order. Thank you!`;
+
+    cart = [];
+    savedCart = [];
+    saveCart();
+    toggleCart(false);
+    if (status) status.textContent = `Order ${order.orderNumber} saved. Continue in WhatsApp to confirm it.`;
+    if (whatsAppWindow) {
+      whatsAppWindow.location.href = `https://wa.me/918655903153?text=${encodeURIComponent(message)}`;
+    } else {
+      window.location.assign(`https://wa.me/918655903153?text=${encodeURIComponent(message)}`);
+    }
+    if (currentUser && currentUser.id) loadCustomerOrders();
+  } catch (error) {
+    if (whatsAppWindow && !whatsAppWindow.closed) whatsAppWindow.close();
+    if (status) status.textContent = error.message || "Unable to place your order. Please try again.";
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.innerHTML = button.dataset.originalHtml || '<i class="fa-brands fa-whatsapp"></i> Place Order on WhatsApp';
+    }
+  }
 }
 
 function openAuthModal() {
@@ -478,6 +681,7 @@ function openAuthModal() {
     if (accName) accName.textContent = `Welcome, ${currentUser.name}`;
     const accIdentifier = document.getElementById("customer-account-identifier");
     if (accIdentifier) accIdentifier.textContent = currentUser.identifier || "";
+    loadCustomerOrders();
   } else {
     switchAuthMode("login");
   }
@@ -591,6 +795,71 @@ function setCurrentCustomer(customer) {
   if (accountName) accountName.textContent = `Welcome, ${customer.name}`;
   const accountIdentifier = document.getElementById("customer-account-identifier");
   if (accountIdentifier) accountIdentifier.textContent = customer.identifier || "";
+  loadCustomerOrders();
+}
+
+async function loadCustomerOrders() {
+  const list = document.getElementById("customer-orders-list");
+  if (!list || !currentUser || !currentUser.id) return;
+  list.innerHTML = "<p>Loading your orders…</p>";
+  try {
+    const response = await fetch("/api/customer/orders", { credentials: "same-origin" });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || `Unable to load orders (HTTP ${response.status}).`);
+    if (!Array.isArray(result)) throw new Error("The order history response is invalid.");
+    customerOrders = result;
+    list.innerHTML = customerOrders.length
+      ? customerOrders.map((order, index) => `
+        <article class="customer-order">
+          <div><strong>${escapeHtml(order.orderNumber)}</strong><span>${escapeHtml(order.status)}</span></div>
+          <p>${new Date(order.createdAt).toLocaleDateString()} · ₹${order.subtotal}</p>
+          <button type="button" class="btn btn-outline" onclick="reorderCustomerOrder(${index})">Reorder</button>
+        </article>
+      `).join("")
+      : "<p>You have not placed an order yet.</p>";
+  } catch (error) {
+    list.innerHTML = `<p role="alert">${escapeHtml(error.message || "Unable to load your orders.")}</p>`;
+  }
+}
+
+async function reorderCustomerOrder(orderIndex) {
+  const order = customerOrders[orderIndex];
+  if (!order) return;
+  if (!products.length) {
+    try {
+      const response = await fetch("/api/products");
+      if (!response.ok) throw new Error(`Unable to load the catalog (HTTP ${response.status}).`);
+      products = await response.json();
+    } catch (error) {
+      alert(error.message || "Unable to load products for reorder.");
+      return;
+    }
+  }
+
+  let skipped = 0;
+  for (const item of order.items) {
+    const product = products.find(entry => entry.id === item.productId);
+    const variants = product && Array.isArray(product.variants) && product.variants.length
+      ? product.variants
+      : ["Standard"];
+    if (!product || product.stock === "Out of Stock" || !variants.includes(item.variant)) {
+      skipped += 1;
+      continue;
+    }
+    const existing = cart.find(entry => entry.id === product.id && entry.variant === item.variant);
+    const quantity = Math.min(item.quantity, 99);
+    if (existing) existing.quantity = Math.min(existing.quantity + quantity, 99);
+    else cart.push({ ...product, variant: item.variant, quantity });
+  }
+  saveCart();
+  closeModal("auth-modal");
+  toggleCart(true);
+  const status = document.getElementById("checkout-status");
+  if (status) {
+    status.textContent = skipped
+      ? `${skipped} unavailable item(s) were skipped. Review your bag before checkout.`
+      : "Your previous items are back in the bag. Review quantities before checkout.";
+  }
 }
 
 async function restoreCustomerSession() {
@@ -629,6 +898,7 @@ async function logoutCustomer() {
       throw new Error(message);
     }
     currentUser = null;
+    customerOrders = [];
     const displayName = document.getElementById("user-display-name");
     if (displayName) displayName.textContent = "Login / Register";
     openAuthModal();

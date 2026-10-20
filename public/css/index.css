@@ -969,6 +969,180 @@
       flex-shrink: 0;
     }
 
+    .delivery-checker {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 0.8fr);
+      align-items: center;
+      gap: 2rem;
+      padding: clamp(1.3rem, 4vw, 2.5rem);
+      margin: 2rem 0;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      background: var(--white);
+    }
+
+    .delivery-checker h2,
+    .product-reviews h3 {
+      color: var(--primary-green);
+      font-family: 'Cinzel', serif;
+    }
+
+    .delivery-checker p {
+      color: var(--text-light);
+    }
+
+    .delivery-check-form {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 0.65rem;
+    }
+
+    .delivery-check-form input,
+    .product-review-form select,
+    .product-review-form textarea {
+      width: 100%;
+      padding: 0.8rem;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      font: inherit;
+    }
+
+    #delivery-check-result {
+      grid-column: 1 / -1;
+      min-height: 1.4rem;
+      font-size: 0.9rem;
+    }
+
+    #delivery-check-result.delivery-available {
+      color: var(--primary-green);
+      font-weight: 700;
+    }
+
+    #delivery-check-result.delivery-unavailable {
+      color: #a32b23;
+    }
+
+    .product-reviews {
+      grid-column: 1 / -1;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .product-reviews-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .product-review-summary,
+    .product-review-empty,
+    .product-review-signin {
+      color: var(--text-light);
+      font-size: 0.9rem;
+    }
+
+    .product-review-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.8rem;
+      margin-bottom: 1rem;
+    }
+
+    .product-review {
+      padding: 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      background: var(--bg-light);
+    }
+
+    .product-review p {
+      margin: 0.4rem 0;
+      overflow-wrap: anywhere;
+    }
+
+    .product-review small,
+    .product-review-stars {
+      color: var(--accent-gold);
+      font-weight: 700;
+    }
+
+    .product-review-form {
+      display: grid;
+      gap: 0.55rem;
+      max-width: 600px;
+      margin-top: 1rem;
+    }
+
+    .product-review-form label {
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    .product-review-status {
+      min-height: 1.4rem;
+      color: var(--primary-green);
+    }
+
+    .review-signin-btn {
+      padding: 0;
+      border: 0;
+      background: none;
+      color: var(--primary-green);
+      font: inherit;
+      font-weight: 700;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .customer-order-history {
+      margin: 1.2rem 0;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .customer-order-history h3 {
+      margin-bottom: 0.6rem;
+      color: var(--primary-green);
+      font-size: 1rem;
+    }
+
+    .customer-order {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.25rem 0.75rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.84rem;
+    }
+
+    .customer-order > div {
+      display: flex;
+      flex-direction: column;
+      overflow-wrap: anywhere;
+    }
+
+    .customer-order > div span,
+    .customer-order p {
+      color: var(--text-light);
+    }
+
+    .customer-order .btn {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+      align-self: center;
+      padding: 0.5rem 0.8rem;
+      font-size: 0.8rem;
+    }
+
+    .checkout-status {
+      min-height: 1.3rem;
+      margin-top: 0.5rem;
+      color: var(--text-light);
+      font-size: 0.85rem;
+    }
+
     .about-social-link {
       display: inline-flex;
       align-items: center;
@@ -1124,6 +1298,15 @@
       .newsletter-consent,
       .newsletter-status {
         grid-column: 1;
+      }
+
+      .delivery-checker {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .delivery-check-form {
+        grid-template-columns: 1fr;
       }
 
       .about-hero {

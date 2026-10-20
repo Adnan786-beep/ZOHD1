@@ -159,6 +159,18 @@
     .dashboard-overview-grid { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(240px, 0.8fr); gap: 1.5rem; }
     .dashboard-section { padding: 1.4rem; border: 1px solid var(--border-color); border-radius: var(--radius); background: var(--white); }
     .dashboard-section h3 { color: var(--primary-green); margin-bottom: 0.8rem; }
+    .sales-trend { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); align-items: end; gap: 0.7rem; min-height: 170px; margin-top: 1rem; }
+    .sales-trend-day { display: grid; grid-template-rows: 1fr auto auto; align-items: end; gap: 0.35rem; height: 150px; text-align: center; font-size: 0.75rem; color: var(--text-light); }
+    .sales-trend-bar-wrap { display: flex; align-items: end; height: 100%; background: var(--accent-beige); border-radius: 8px 8px 0 0; overflow: hidden; }
+    .sales-trend-bar { width: 100%; min-height: 2px; background: var(--primary-light); border-radius: 8px 8px 0 0; }
+    .sales-trend-value { font-weight: 700; color: var(--primary-green); }
+    .delivery-area-form { display: grid; grid-template-columns: minmax(130px, 0.5fr) minmax(160px, 1fr) auto; gap: 0.75rem; align-items: end; margin: 1rem 0; }
+    .delivery-area-form label { display: grid; gap: 0.35rem; color: var(--text-light); font-size: 0.82rem; font-weight: 700; }
+    .delivery-area-form input { min-width: 0; padding: 0.7rem 0.8rem; border: 1px solid var(--border-color); border-radius: 9px; }
+    .delivery-area-list { display: grid; gap: 0.5rem; }
+    .delivery-area-item { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.7rem 0; border-bottom: 1px solid var(--border-color); }
+    .review-actions { display: flex; gap: 0.7rem; white-space: nowrap; }
+    .admin-form-status { min-height: 1.4rem; color: var(--primary-green); }
     .dashboard-section-heading { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
     .quick-actions { display: grid; gap: 0.75rem; }
     .quick-actions .btn { width: 100%; }
@@ -386,6 +398,8 @@
       .admin-container { margin: 1rem auto; padding: 0 0.8rem; }
       .dashboard-panel { padding: 1.2rem; }
       .dashboard-overview-grid { grid-template-columns: 1fr; }
+      .delivery-area-form { grid-template-columns: 1fr; }
+      .sales-trend { gap: 0.35rem; }
       .dashboard-header { align-items: flex-start; gap: 1rem; }
       .dashboard-header h2 { font-size: 1.4rem; }
       .metric-card { padding: 1.1rem; }
@@ -453,6 +467,8 @@
         <button class="tab-btn active" onclick="switchTab('tab-overview')"><i class="fa-solid fa-chart-line"></i> Overview</button>
         <button class="tab-btn" onclick="switchTab('tab-inventory')"><i class="fa-solid fa-box"></i> Products</button>
         <button class="tab-btn" onclick="switchTab('tab-deliveries')"><i class="fa-solid fa-receipt"></i> Orders</button>
+        <button class="tab-btn" onclick="switchTab('tab-reviews'); loadAdminReviews()"><i class="fa-solid fa-star"></i> Reviews</button>
+        <button class="tab-btn" onclick="switchTab('tab-delivery'); loadDeliveryAreas()"><i class="fa-solid fa-truck"></i> Delivery Areas</button>
       </div>
 
       <div id="tab-overview" class="tab-content active">
@@ -462,8 +478,14 @@
           <div class="metric-card"><h4>In Stock</h4><p id="metric-in-stock">0</p></div>
           <div class="metric-card"><h4>Awaiting Confirmation</h4><p id="metric-orders">0</p></div>
           <div class="metric-card"><h4>Total Orders</h4><p id="metric-all-orders">0</p></div>
+          <div class="metric-card"><h4>7-Day Order Value</h4><p id="metric-week-sales">₹0</p></div>
         </div>
         <div id="low-stock-alert" class="low-stock-alert hidden" role="status"></div>
+        <section class="dashboard-section" style="margin-bottom:1.5rem;">
+          <h3>Last 7 days</h3>
+          <p style="font-size:0.84rem; color:var(--text-light);">Order value by order date, excluding cancelled orders. This is not confirmed or collected revenue.</p>
+          <div id="sales-trend" class="sales-trend" role="img" aria-label="Order value over the last seven days"></div>
+        </section>
         <div class="dashboard-overview-grid">
           <section class="dashboard-section">
             <div class="dashboard-section-heading">
@@ -486,6 +508,33 @@
             </div>
           </section>
         </div>
+      </div>
+
+      <div id="tab-reviews" class="tab-content">
+        <h3>Customer Reviews</h3>
+        <p style="font-size:0.85rem; color:var(--text-light);">Reviews are shown publicly only after approval. Only customers with a saved, non-cancelled order can submit reviews.</p>
+        <div class="admin-table-scroll">
+          <table class="admin-table">
+            <thead><tr><th>Product</th><th>Customer</th><th>Rating</th><th>Review</th><th>Date</th><th>Status / Action</th></tr></thead>
+            <tbody id="reviews-tbody"><tr><td colspan="6">Load reviews to review submissions.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="tab-delivery" class="tab-content">
+        <h3>Delivery PIN codes</h3>
+        <p style="font-size:0.85rem; color:var(--text-light);">Only PIN codes listed here are reported as serviceable. Add only areas you currently deliver to.</p>
+        <form id="delivery-area-form" class="delivery-area-form">
+          <label for="delivery-area-pincode">PIN code
+            <input id="delivery-area-pincode" name="pincode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="6 digits" required />
+          </label>
+          <label for="delivery-area-name">Area name
+            <input id="delivery-area-name" name="area" maxlength="100" placeholder="City or locality" required />
+          </label>
+          <button class="btn btn-primary" type="submit">Add area</button>
+        </form>
+        <p id="delivery-area-status" class="admin-form-status" role="status" aria-live="polite"></p>
+        <div id="delivery-area-list" class="delivery-area-list"></div>
       </div>
 
       <!-- TAB 1: PRODUCT CATALOG CRUD -->
@@ -669,6 +718,8 @@
   <script>
     let products = [];
     let orders = [];
+    let adminReviews = [];
+    let deliveryAreas = [];
     const orderStatuses = [
       "Awaiting WhatsApp confirmation",
       "Confirmed",
@@ -697,7 +748,7 @@
     function switchTab(tabId) {
       document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
       const selectedButton = [...document.querySelectorAll(".tab-btn")]
-        .find(button => button.getAttribute("onclick") === `switchTab('${tabId}')`);
+        .find(button => button.getAttribute("onclick").includes(`switchTab('${tabId}')`));
       if (selectedButton) selectedButton.classList.add("active");
 
       document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
@@ -735,6 +786,7 @@
         products = await adminCatalogRequest("/api/admin/products");
         if (!Array.isArray(products)) throw new Error("The product catalog response is invalid.");
         renderDashboardData();
+        if (adminReviews.length) renderAdminReviews();
       } catch (error) {
         document.getElementById("inventory-tbody").innerHTML = `<tr><td colspan="6" role="alert">${escapeHtml(error.message)}</td></tr>`;
         alert(error.message);
@@ -749,6 +801,7 @@
         if (!Array.isArray(result)) throw new Error("The saved orders response is invalid.");
         orders = result;
         renderOrders();
+        renderSalesTrend();
       } catch (error) {
         tableBody.innerHTML = `<tr><td colspan="6" role="alert">${escapeHtml(error.message)}</td></tr>`;
         alert(error.message);
@@ -785,7 +838,139 @@
 
       renderProducts();
       renderRecentOrders();
+      renderSalesTrend();
     }
+
+    function renderSalesTrend() {
+      const chart = document.getElementById("sales-trend");
+      if (!chart) return;
+      const today = new Date();
+      today.setUTCHours(0, 0, 0, 0);
+      const days = Array.from({ length: 7 }, (_, index) => {
+        const date = new Date(today);
+        date.setUTCDate(today.getUTCDate() - (6 - index));
+        const key = date.toISOString().slice(0, 10);
+        const value = orders
+          .filter(order => order.status !== "Cancelled" && String(order.createdAt).slice(0, 10) === key)
+          .reduce((sum, order) => sum + Number(order.subtotal || 0), 0);
+        return { date, key, value };
+      });
+      const maximum = Math.max(...days.map(day => day.value), 1);
+      const total = days.reduce((sum, day) => sum + day.value, 0);
+      document.getElementById("metric-week-sales").textContent = `₹${total.toLocaleString("en-IN")}`;
+      chart.innerHTML = days.map(day => `
+        <div class="sales-trend-day" aria-label="${day.date.toLocaleDateString()} order value ₹${day.value}">
+          <span class="sales-trend-value">₹${day.value ? day.value.toLocaleString("en-IN") : "0"}</span>
+          <div class="sales-trend-bar-wrap"><div class="sales-trend-bar" style="height:${Math.max(day.value ? day.value / maximum * 100 : 0, day.value ? 4 : 0)}%"></div></div>
+          <span>${day.date.toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</span>
+        </div>
+      `).join("");
+    }
+
+    async function loadAdminReviews() {
+      const tbody = document.getElementById("reviews-tbody");
+      tbody.innerHTML = `<tr><td colspan="6">Loading reviews…</td></tr>`;
+      try {
+        adminReviews = await adminCatalogRequest("/api/admin/reviews");
+        if (!Array.isArray(adminReviews)) throw new Error("The reviews response is invalid.");
+        renderAdminReviews();
+      } catch (error) {
+        tbody.innerHTML = `<tr><td colspan="6" role="alert">${escapeHtml(error.message)}</td></tr>`;
+      }
+    }
+
+    function renderAdminReviews() {
+      const tbody = document.getElementById("reviews-tbody");
+      tbody.innerHTML = adminReviews.length
+        ? adminReviews.map(review => {
+          const product = products.find(item => item.id === review.productId);
+          const date = new Date(review.createdAt);
+          return `<tr>
+            <td>${escapeHtml(product ? product.name : `Product #${review.productId}`)}</td>
+            <td>${escapeHtml(review.customerName)}</td>
+            <td>${review.rating} / 5</td>
+            <td>${escapeHtml(review.text)}</td>
+            <td>${Number.isNaN(date.getTime()) ? "Unknown" : escapeHtml(date.toLocaleDateString())}</td>
+            <td>
+              <span class="status-badge ${review.status === "approved" ? "status-delivered" : review.status === "rejected" ? "status-cancelled" : "status-pending"}">${escapeHtml(review.status)}</span>
+              <div class="review-actions">
+                ${review.status !== "approved" ? `<button type="button" class="table-action" onclick="moderateReview('${escapeHtml(review.id)}', 'approved')">Approve</button>` : ""}
+                ${review.status !== "rejected" ? `<button type="button" class="table-action delete-action" onclick="moderateReview('${escapeHtml(review.id)}', 'rejected')">Reject</button>` : ""}
+              </div>
+            </td>
+          </tr>`;
+        }).join("")
+        : `<tr><td colspan="6" class="empty-state">No customer reviews have been submitted yet.</td></tr>`;
+    }
+
+    async function moderateReview(reviewId, status) {
+      try {
+        const updated = await adminCatalogRequest(`/api/admin/reviews/${encodeURIComponent(reviewId)}`, {
+          method: "PUT",
+          body: JSON.stringify({ status })
+        });
+        adminReviews = adminReviews.map(review => review.id === reviewId ? updated : review);
+        renderAdminReviews();
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    async function loadDeliveryAreas() {
+      const list = document.getElementById("delivery-area-list");
+      list.innerHTML = "<p>Loading delivery areas…</p>";
+      try {
+        deliveryAreas = await adminCatalogRequest("/api/admin/delivery-areas");
+        if (!Array.isArray(deliveryAreas)) throw new Error("The delivery areas response is invalid.");
+        renderDeliveryAreas();
+      } catch (error) {
+        list.innerHTML = `<p role="alert">${escapeHtml(error.message)}</p>`;
+      }
+    }
+
+    function renderDeliveryAreas() {
+      const list = document.getElementById("delivery-area-list");
+      list.innerHTML = deliveryAreas.length
+        ? deliveryAreas.map(area => `
+          <div class="delivery-area-item">
+            <span><strong>${escapeHtml(area.pincode)}</strong> · ${escapeHtml(area.area)}</span>
+            <button type="button" class="table-action delete-action" onclick="removeDeliveryArea('${escapeHtml(area.pincode)}')">Remove</button>
+          </div>
+        `).join("")
+        : `<p class="empty-state">No serviceable PIN codes are configured yet.</p>`;
+    }
+
+    async function saveDeliveryAreas(nextAreas) {
+      const status = document.getElementById("delivery-area-status");
+      status.textContent = "";
+      try {
+        deliveryAreas = await adminCatalogRequest("/api/admin/delivery-areas", {
+          method: "PUT",
+          body: JSON.stringify({ areas: nextAreas })
+        });
+        renderDeliveryAreas();
+        status.textContent = "Delivery areas saved.";
+      } catch (error) {
+        status.textContent = error.message;
+      }
+    }
+
+    async function removeDeliveryArea(pincode) {
+      await saveDeliveryAreas(deliveryAreas.filter(area => area.pincode !== pincode));
+    }
+
+    document.getElementById("delivery-area-form").addEventListener("submit", async event => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const pincode = form.elements.pincode.value.trim();
+      const area = form.elements.area.value.trim();
+      if (deliveryAreas.some(entry => entry.pincode === pincode)) {
+        document.getElementById("delivery-area-status").textContent = "That PIN code is already listed.";
+        return;
+      }
+      await saveDeliveryAreas([...deliveryAreas, { pincode, area }]);
+      if (deliveryAreas.some(entry => entry.pincode === pincode)) form.reset();
+    });
 
     function renderProducts() {
       const search = document.getElementById("product-search").value.trim().toLocaleLowerCase();

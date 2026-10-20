@@ -190,6 +190,20 @@
       </form>
     </section>
 
+    <section class="delivery-checker" aria-labelledby="delivery-checker-heading">
+      <div>
+        <span class="home-eyebrow">Delivery availability</span>
+        <h2 id="delivery-checker-heading">Check your PIN code.</h2>
+        <p>Enter your six-digit PIN code to see whether delivery is currently available in your area.</p>
+      </div>
+      <form id="delivery-check-form" class="delivery-check-form" onsubmit="checkDeliveryArea(event)">
+        <label class="visually-hidden" for="delivery-pincode">Six-digit PIN code</label>
+        <input id="delivery-pincode" name="pincode" type="text" inputmode="numeric" autocomplete="postal-code" pattern="[0-9]{6}" maxlength="6" placeholder="Enter PIN code" required />
+        <button class="btn btn-primary" type="submit">Check delivery</button>
+        <p id="delivery-check-result" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
     <div class="home-social">
       <div>
         <span class="home-eyebrow">Stay connected</span>
@@ -301,6 +315,7 @@
       <button class="btn btn-whatsapp full-width" onclick="checkoutViaWhatsApp()">
         <i class="fa-brands fa-whatsapp"></i> Place Order on WhatsApp
       </button>
+      <p id="checkout-status" class="checkout-status" role="status" aria-live="polite"></p>
     </div>
   </div>
 
@@ -317,6 +332,10 @@
       <div id="customer-account-summary" class="hidden">
         <h3 id="customer-account-name" style="margin-bottom:0.5rem; color:var(--primary-green);"></h3>
         <p id="customer-account-identifier" style="margin-bottom:1.2rem; color:var(--text-light);"></p>
+        <section class="customer-order-history" aria-labelledby="customer-orders-heading">
+          <h3 id="customer-orders-heading">Your orders</h3>
+          <div id="customer-orders-list" aria-live="polite"><p>Loading your orders…</p></div>
+        </section>
         <button type="button" class="btn btn-outline full-width" onclick="logoutCustomer()">Sign out</button>
         <p id="customer-logout-error" role="alert" aria-live="polite" style="color:#b42318;"></p>
       </div>

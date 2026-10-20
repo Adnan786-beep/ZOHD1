@@ -19,6 +19,23 @@ CREATE TABLE IF NOT EXISTS orders (
 CREATE INDEX IF NOT EXISTS orders_created_at_idx ON orders (created_at DESC);
 CREATE INDEX IF NOT EXISTS orders_status_idx ON orders (status);
 
+CREATE TABLE IF NOT EXISTS product_reviews (
+  id uuid PRIMARY KEY,
+  product_id integer NOT NULL,
+  customer_id uuid NOT NULL REFERENCES customers (id) ON DELETE CASCADE,
+  created_at timestamptz NOT NULL,
+  status text NOT NULL CHECK (status IN ('pending', 'approved', 'rejected')),
+  data jsonb NOT NULL,
+  UNIQUE (product_id, customer_id)
+);
+
+CREATE INDEX IF NOT EXISTS product_reviews_product_status_idx ON product_reviews (product_id, status);
+
+CREATE TABLE IF NOT EXISTS store_settings (
+  key text PRIMARY KEY,
+  value jsonb NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS newsletter_subscribers (
   email text PRIMARY KEY,
   subscribed_at timestamptz NOT NULL
