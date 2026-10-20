@@ -543,7 +543,6 @@ function showAdminSignIn() {
   if (modal) modal.classList.add("active");
 }
 const adminForm = document.getElementById("main-admin-login-form");
-const adminForm = document.getElementById("main-admin-login-form");
 if (adminForm) {
   adminForm.addEventListener("submit", (event) => {
     event.preventDefault();

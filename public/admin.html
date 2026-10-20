@@ -730,7 +730,7 @@
       return response.status === 204 ? null : response.json();
     }
 
-    async function loadCatalog() {
+    async function loadAdminCatalog() {
       try {
         products = await adminCatalogRequest("/api/admin/products");
         if (!Array.isArray(products)) throw new Error("The product catalog response is invalid.");
@@ -1151,7 +1151,7 @@
   </script>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      loadCatalog();
+      loadAdminCatalog();
       loadOrders();
     });
   </script>
