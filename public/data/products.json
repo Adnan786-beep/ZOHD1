@@ -4,7 +4,7 @@
     "name": "Bamboo Toothbrush",
     "price": 10,
     "category": "Oral Care",
-    "image": "adult-toothbrus.png",
+    "image": "adult-toothbrus.jpg",
     "images": ["images/adult-toothbrush.jpg"]
   },
   {
@@ -12,7 +12,7 @@
     "name": "Eco Toothpaste",
     "price": 15,
     "category": "Oral Care",
-    "image": "kids-toothbrush.png",
+    "image": "kids-toothbrush.jpg",
     "images": ["images/kids-toothbrush.jpg"]
   }
 ]
