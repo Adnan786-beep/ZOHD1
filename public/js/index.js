@@ -20,7 +20,12 @@ let products = [];
     async function loadProducts() {
       const container = document.getElementById("product-grid-container");
       try {
-        const response = await fetch("/api/products");
+        const response = await fetch('data/products.json')
+  .then(response => response.json())
+  .then(data => {
+    console.log('Products loaded successfully:', data);
+  })
+  .catch(err => console.error('Error loading products:', err));
         if (!response.ok) {
           let message = "Unable to load the product catalog.";
           try {
@@ -657,7 +662,7 @@ let products = [];
         error.textContent = "Unable to contact the account service. Please try again.";
       } finally {
         submitButton.disabled = false;
-      }
+      }//fetch('/me')
     }
 
     async function restoreCustomerSession() {
