@@ -125,6 +125,45 @@ async function initializeDatabase() {
             AND data->>'image' = 'images/products/kids-bamboo-toothbrush-set.png'
             AND data->'images' = '["images/products/kids-bamboo-toothbrush-set.png"]'::jsonb`;
       }
+      const familyToothbrushProduct = initialProducts.find(product => product.sku === "ZOHD-BTB-002");
+      if (familyToothbrushProduct) {
+        await query`UPDATE products
+          SET data = jsonb_set(
+            jsonb_set(data, '{image}', to_jsonb(${familyToothbrushProduct.image}::text)),
+            '{images}',
+            ${JSON.stringify(familyToothbrushProduct.images)}::jsonb
+          )
+          WHERE id = ${familyToothbrushProduct.id}
+            AND data->>'sku' = ${familyToothbrushProduct.sku}
+            AND data->>'image' = 'images/products/family-bamboo-toothbrush-set.png'
+            AND data->'images' = '["images/products/family-bamboo-toothbrush-set.png"]'::jsonb`;
+      }
+      const adultToothbrushProduct = initialProducts.find(product => product.sku === "ZOHD-BTB-003");
+      if (adultToothbrushProduct) {
+        await query`UPDATE products
+          SET data = jsonb_set(
+            jsonb_set(data, '{image}', to_jsonb(${adultToothbrushProduct.image}::text)),
+            '{images}',
+            ${JSON.stringify(adultToothbrushProduct.images)}::jsonb
+          )
+          WHERE id = ${adultToothbrushProduct.id}
+            AND data->>'sku' = ${adultToothbrushProduct.sku}
+            AND data->>'image' = 'images/adult-toothbrush.jpg'
+            AND data->'images' = '["images/adult-toothbrush.jpg"]'::jsonb`;
+      }
+      const kidsOralCareProduct = initialProducts.find(product => product.sku === "ZOHD-BTB-004");
+      if (kidsOralCareProduct) {
+        await query`UPDATE products
+          SET data = jsonb_set(
+            jsonb_set(data, '{image}', to_jsonb(${kidsOralCareProduct.image}::text)),
+            '{images}',
+            ${JSON.stringify(kidsOralCareProduct.images)}::jsonb
+          )
+          WHERE id = ${kidsOralCareProduct.id}
+            AND data->>'sku' = ${kidsOralCareProduct.sku}
+            AND data->>'image' = 'images/neem-combo.jpg'
+            AND data->'images' = '["images/neem-combo.jpg"]'::jsonb`;
+      }
       await query`SELECT setval(
         pg_get_serial_sequence('products', 'id'),
         GREATEST(COALESCE((SELECT MAX(id) FROM products), 0), 1),
