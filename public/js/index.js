@@ -507,3 +507,10 @@ window.addEventListener('load', () => {
   if (!loader) return;
   setTimeout(() => loader.classList.add('hidden'), 600);
 });
+function showAdminSignIn() {
+  alert("Admin portal is disabled in static mode.");
+}
+
+function showCustomerSignIn() {
+  switchAuthMode("login");
+}
