@@ -543,27 +543,23 @@ function showAdminSignIn() {
   if (modal) modal.classList.add("active");
 }
 const adminForm = document.getElementById("main-admin-login-form");
+const adminForm = document.getElementById("main-admin-login-form");
 if (adminForm) {
   adminForm.addEventListener("submit", (event) => {
     event.preventDefault();
-    
+
     const adminIdInput = document.getElementById("main-admin-id");
     const passwordInput = document.getElementById("main-admin-password");
     const errorElem = document.getElementById("main-admin-error");
 
-    // Simple static credentials check (customize ID and password as needed)
     if (adminIdInput.value === "admin" && passwordInput.value === "admin123") {
       if (errorElem) errorElem.textContent = "";
       closeModal("auth-modal");
-
-      const adminSection = document.getElementById("admin-dashboard-section");
-      if (adminSection) {
-        showSection("admin-dashboard-section");
-      } else {
-        alert("Admin authenticated successfully! (Static demo mode)");
-      }
+      
+      // Explicit redirect to admin.html in the public root folder
+      window.location.assign("/admin.html");
     } else {
-      if (errorElem) errorElem.textContent = "Invalid admin ID or password. (Try: admin / admin123)";
+      if (errorElem) errorElem.textContent = "Invalid admin ID or password.";
     }
   });
 }
