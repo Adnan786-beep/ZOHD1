@@ -662,7 +662,7 @@ let products = [];
         error.textContent = "Unable to contact the account service. Please try again.";
       } finally {
         submitButton.disabled = false;
-      }//fetch('/me')
+      }  //fetch('/me')
     }
 
     async function restoreCustomerSession() {
