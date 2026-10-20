@@ -552,9 +552,11 @@ if (adminForm) {
     const errorElem = document.getElementById("main-admin-error");
 
     // Simple static credentials check (customize ID and password as needed)
-    if (adminIdInput.value === "admin" && passwordInput.value === "admin123") {
-      if (errorElem) errorElem.textContent = "";
-      closeModal("auth-modal");
+if (adminIdInput.value === "admin" && passwordInput.value === "admin123") {
+  if (errorElem) errorElem.textContent = "";
+  closeModal("auth-modal");
+  showSection("admin-dashboard-section");
+}
       
       // Reveal static admin dashboard view if it exists on the page
       const adminSection = document.getElementById("admin-dashboard-section");
