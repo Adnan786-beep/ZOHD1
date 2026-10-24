@@ -6,18 +6,26 @@
   <title>ZOHD - House of Sustainables | Eco-Friendly Oral Care</title>
   <meta name="description" content="Explore bamboo and neem toothbrushes for kids, adults, and families, plus a neem tongue-cleaner set and everyday essentials from ZOHD." />
   
-  <!-- Fonts & Font Awesome Icons -->
+  <!-- 1. Optimized Google Fonts with display=swap -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  </noscript>
+
+  <!-- 2. Non-blocking Font Awesome loading -->
+  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  </noscript>
 
   <link rel="stylesheet" href="css/index.css" />
 </head>
 <body>
   <div id="page-loader" class="page-loader" aria-live="polite" aria-label="Loading website">
     <div class="loader-content">
-      <img src="images/zohd-mark.png" alt="ZOHD logo" class="loader-logo" />
+      <img src="images/zohd-mark.png" alt="ZOHD logo" class="loader-logo" width="100" height="100" />
       <div class="loader-spinner"></div>
     </div>
   </div>
@@ -31,7 +39,7 @@
   <header class="navbar">
     <div class="nav-container">
       <a class="brand-logo" onclick="showSection('home-section')" aria-label="ZOHD home">
-        <img src="images/zohd-mark.png" alt="ZOHD logo mark" class="brand-logo-image" />
+        <img src="images/zohd-mark.png" alt="ZOHD logo mark" class="brand-logo-image" width="40" height="40" />
         <span class="brand-logo-text" aria-hidden="true">ZOHD</span>
       </a>
 
@@ -71,7 +79,8 @@
       </div>
       <div class="hero-product">
         <span class="hero-product-note"><i class="fa-solid fa-house"></i> The family combo</span>
-        <img src="images/products/family-bamboo-toothbrush-lifestyle.png" alt="ZOHD Family Bamboo Toothbrush Combo with two adult and two kids toothbrushes" />
+        <!-- Added fetchpriority for immediate loading of LCP image -->
+        <img src="images/products/family-bamboo-toothbrush-lifestyle.png" alt="ZOHD Family Bamboo Toothbrush Combo with two adult and two kids toothbrushes" fetchpriority="high" />
         <span class="hero-product-price">Family pack <strong>₹183</strong> <del>₹288</del></span>
       </div>
     </div>
@@ -446,17 +455,15 @@
         <h4>Office Address</h4>
         <p><i class="fa-solid fa-location-dot"></i> Ground Floor, Mehta Building, Calicut Rd, Ballard Estate, Fort, Mumbai, Maharashtra 400001</p>
         <p><a href="https://www.google.com/maps/search/?api=1&amp;query=Ground%20Floor%2C%20Mehta%20Building%2C%20Calicut%20Rd%2C%20Ballard%20Estate%2C%20Fort%2C%20Mumbai%2C%20Maharashtra%20400001" target="_blank" rel="noopener noreferrer">View on map <i class="fa-solid fa-arrow-up-right-from-square"></i></a></p>
-        <iframe class="office-map" title="Map showing the ZOHD office location" src="https://www.google.com/maps?q=Ground%20Floor%2C%20Mehta%20Building%2C%20Calicut%20Rd%2C%20Ballard%20Estate%2C%20Fort%2C%20Mumbai%2C%20Maharashtra%20400001&amp;output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        <!-- 3. Added loading="lazy" and width/height dimensions to prevent layout shifts -->
+        <iframe class="office-map" title="Map showing the ZOHD office location" src="https://www.google.com/maps?q=Ground%20Floor%2C%20Mehta%20Building%2C%20Calicut%20Rd%2C%20Ballard%20Estate%2C%20Fort%2C%20Mumbai%2C%20Maharashtra%20400001&amp;output=embed" width="100%" height="200" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>&copy; 2026  ZOHD - House of Sustainables. All Rights Reserved.</p>
+      <p>&copy; 2026 ZOHD - House of Sustainables. All Rights Reserved.</p>
     </div>
   </footer>
 
   <script src="js/index.js" defer></script>
-  <section id="admin-dashboard-section" class="page-section">
-  <!-- Paste admin.html content here -->
-</section>
 </body>
 </html>

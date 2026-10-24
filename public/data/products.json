@@ -99,72 +99,104 @@
     "stock": "In Stock",
     "description": "Make your child's daily oral hygiene routine more comfortable and environmentally conscious with the ZOHD Kids Oral Care Combo. This practical oral care set includes two bamboo toothbrushes for kids and two reusable neem wood tongue cleaners.\n\n**Complete Oral Care Combo for Kids**\nThe ZOHD Kids Oral Care Combo contains four oral care essentials: two kids' bamboo toothbrushes and two reusable neem wood tongue cleaners. This combination helps parents include both toothbrushing and tongue cleaning in their family's daily routine.\n\n**Reusable Neem Wood Tongue Cleaners**\nMade from natural neem wood, these reusable tongue cleaners offer an alternative to conventional plastic tongue cleaning tools. Tongue cleaning helps remove accumulated coating and debris from the surface of the tongue.\n\n**Why Choose the ZOHD Kids Oral Care Combo?**\n• Complete oral care set containing four items.\n• Includes two bamboo toothbrushes designed for kids.\n• Includes two reusable neem wood tongue cleaners.\n• Ultra-soft BPA-free toothbrush bristles for gentle daily brushing.\n• Neem wood tongue cleaners for everyday tongue hygiene."
   },
-  {
-    "id": 5,
-    "name": "ZOHD Family Oral Care Kit",
-    "sku": "ZOHD-BTB-005",
+ {
+    "id": 4,
+    "name": "ZOHD Kids Oral Care Combo",
+    "sku": "ZOHD-BTB-004",
     "keywords": [
-      "2 Adult Bamboo Toothbrushes, 1 Kids Toothbrush & 2 Wooden Tongue Cleaner",
-      "Eco-Friendly Sustainable Combo"
+      "2 Bamboo Toothbrushes & 2 Wooden Tongue Cleaners",
+      "Soft Bristles",
+      "Eco-Friendly",
+      "Natural Oral Hygiene Kit"
     ],
-    "price": 261,
-    "mrp": 458,
-    "category": "Family Oral Care",
-    "image": "images/products/zohd-oral-care-kit.png",
-    "images": ["images/products/zohd-oral-care-kit.png"],
-    "variants": ["2 adult + 1 kids' toothbrush + 2 tongue cleaners"],
-    "stock": "In Stock",
-    "description": "Make everyday oral hygiene more convenient and environmentally conscious with the ZOHD Family Oral Care Combo. Thoughtfully designed for small families, this complete oral care set includes two bamboo toothbrushes for adults, one bamboo toothbrush for kids, and two reusable neem wood tongue cleaners.\n\n**Complete Oral Care Set for Small Families**\nContains five essential oral care items: two adult bamboo toothbrushes, one kids' bamboo toothbrush, and two reusable neem wood tongue cleaners. This combination makes it easier for family members to maintain their individual oral hygiene routines.\n\n**Natural Bamboo Handles & Neem Wood Cleaners**\nThe toothbrushes feature natural bamboo handles, while the tongue cleaners are made from natural neem wood, helping families reduce their reliance on conventional plastic products.\n\n**Why Choose the ZOHD Family Oral Care Combo?**\n• Complete family oral care set containing five items.\n• Includes two adult bamboo toothbrushes & one kids' bamboo toothbrush.\n• Includes two reusable neem wood tongue cleaners.\n• Soft BPA-free bristles on adult toothbrushes; soft bristles on kids' toothbrushes.\n• A natural-material alternative to conventional plastic oral care products."
-  },
-  {
-    "id": 6,
-    "name": "ZOHD Bamboo Toothbrush & Wooden Tongue Cleaner Combo",
-    "sku": "ZOHD-BTB-006",
-    "keywords": [
-      "2 Adult Toothbrushes & 2 Tongue Cleaners",
-      "Eco-Friendly Oral Care Kit"
-    ],
-    "price": 198,
+    "price": 230,
     "mrp": 386,
-    "category": "Adult Oral Care",
-    "image": "images/neem-combo.jpg",
-    "images": ["images/neem-combo.jpg"],
-    "variants": ["2 adult toothbrushes + 2 tongue cleaners"],
+    "category": "Kids Oral Care",
+    "image": "images/products/kids-oral-care-combo-main.png",
+    "images": [
+      "images/products/kids-oral-care-combo-main.png",
+      "images/products/kids-oral-care-combo-lifestyle.png",
+      "images/products/kids-oral-care-combo-detail.png",
+      "images/products/kids-oral-care-combo-size-guide.png",
+      "images/products/kids-oral-care-combo-tongue-cleaners.png"
+    ],
+    "variants": ["2 kids' toothbrushes + 2 tongue cleaners"],
     "stock": "In Stock",
-    "description": "Make your daily oral hygiene routine more environmentally conscious with the ZOHD Sustainable Oral Care Combo. Designed for couples and individuals, this convenient set includes two bamboo toothbrushes and two reusable neem wood tongue cleaners.\n\n**Complete Oral Care Set for Two**\nIncludes four essential oral care items: two bamboo toothbrushes and two reusable neem wood tongue cleaners. The set is suitable for couples or two individuals who want their own toothbrush and tongue cleaning tool for daily use.\n\n**Soft BPA-Free Bristles & Reusable Neem Wood**\nEach bamboo toothbrush features soft BPA-free bristles designed for a comfortable brushing experience, complemented by reusable neem wood tongue cleaners for comprehensive everyday mouth care.\n\n**Why Choose the ZOHD Sustainable Oral Care Combo?**\n• Complete set for couples or two individuals.\n• Includes two adult bamboo toothbrushes & two neem wood tongue cleaners.\n• Soft BPA-free bristles for gentle daily brushing.\n• Reusable neem wood tongue cleaners for fresher breath.\n• Eco-conscious design to reduce plastic waste."
+    "description": "Make your child's daily oral hygiene routine more comfortable and environmentally conscious with the ZOHD Kids Oral Care Combo. This practical oral care set includes two bamboo toothbrushes for kids and two reusable neem wood tongue cleaners.\n\n**Complete Oral Care Combo for Kids**\nThe ZOHD Kids Oral Care Combo contains four oral care essentials: two kids' bamboo toothbrushes and two reusable neem wood tongue cleaners. This combination helps parents include both toothbrushing and tongue cleaning in their family's daily routine.\n\n**Reusable Neem Wood Tongue Cleaners**\nMade from natural neem wood, these reusable tongue cleaners offer an alternative to conventional plastic tongue cleaning tools. Tongue cleaning helps remove accumulated coating and debris from the surface of the tongue.\n\n**Why Choose the ZOHD Kids Oral Care Combo?**\n• Complete oral care set containing four items.\n• Includes two bamboo toothbrushes designed for kids.\n• Includes two reusable neem wood tongue cleaners.\n• Ultra-soft BPA-free toothbrush bristles for gentle daily brushing.\n• Neem wood tongue cleaners for everyday tongue hygiene."
   },
   {
-    "id": 7,
-    "name": "ZOHD Family Oral Care Combo",
-    "sku": "ZOHD-BTB-007",
+    "id": 4,
+    "name": "ZOHD Kids Oral Care Combo",
+    "sku": "ZOHD-BTB-004",
     "keywords": [
-      "3 Adult Bamboo Toothbrushes, 1 Kids Toothbrush & 1 Wooden Tongue Cleaner",
-      "Sustainable Oral Care Kit"
+      "2 Bamboo Toothbrushes & 2 Wooden Tongue Cleaners",
+      "Soft Bristles",
+      "Eco-Friendly",
+      "Natural Oral Hygiene Kit"
     ],
-    "price": 245,
-    "mrp": 409,
-    "category": "Family Oral Care",
-    "image": "images/products/zohd-oral-care-kit.png",
-    "images": ["images/products/zohd-oral-care-kit.png"],
-    "variants": ["3 adult + 1 kids' toothbrush + 1 tongue cleaner"],
+    "price": 230,
+    "mrp": 386,
+    "category": "Kids Oral Care",
+    "image": "images/products/kids-oral-care-combo-main.png",
+    "images": [
+      "images/products/kids-oral-care-combo-main.png",
+      "images/products/kids-oral-care-combo-lifestyle.png",
+      "images/products/kids-oral-care-combo-detail.png",
+      "images/products/kids-oral-care-combo-size-guide.png",
+      "images/products/kids-oral-care-combo-tongue-cleaners.png"
+    ],
+    "variants": ["2 kids' toothbrushes + 2 tongue cleaners"],
     "stock": "In Stock",
-    "description": "Make everyday oral hygiene more convenient with the ZOHD Family Oral Care Combo, thoughtfully designed for families looking for practical and eco-conscious personal care essentials. This combo includes three adult bamboo toothbrushes, one kids' bamboo toothbrush, and one reusable neem wood tongue cleaner.\n\n**Complete Oral Care Essentials for the Family**\nThe ZOHD Family Oral Care Combo contains five items suitable for households that need toothbrushes for multiple adults and a child, making it easier to organize everyday oral hygiene essentials in one place.\n\n**Soft BPA-Free Bristles & Natural Bamboo Handles**\nThe adult bamboo toothbrushes feature soft BPA-free bristles for comfortable daily cleaning, while the kids' toothbrush features soft bristles designed to suit children's delicate gums.\n\n**Why Choose the ZOHD Family Oral Care Combo?**\n• Complete oral care combo containing five items.\n• Includes three adult bamboo toothbrushes & one kids' bamboo toothbrush.\n• Includes one reusable neem wood tongue cleaner.\n• Soft BPA-free bristles on adult toothbrushes; gentle bristles for kids.\n• Natural bamboo handles and neem wood tongue cleaner for plastic-free choices."
+    "description": "Make your child's daily oral hygiene routine more comfortable and environmentally conscious with the ZOHD Kids Oral Care Combo. This practical oral care set includes two bamboo toothbrushes for kids and two reusable neem wood tongue cleaners.\n\n**Complete Oral Care Combo for Kids**\nThe ZOHD Kids Oral Care Combo contains four oral care essentials: two kids' bamboo toothbrushes and two reusable neem wood tongue cleaners. This combination helps parents include both toothbrushing and tongue cleaning in their family's daily routine.\n\n**Reusable Neem Wood Tongue Cleaners**\nMade from natural neem wood, these reusable tongue cleaners offer an alternative to conventional plastic tongue cleaning tools. Tongue cleaning helps remove accumulated coating and debris from the surface of the tongue.\n\n**Why Choose the ZOHD Kids Oral Care Combo?**\n• Complete oral care set containing four items.\n• Includes two bamboo toothbrushes designed for kids.\n• Includes two reusable neem wood tongue cleaners.\n• Ultra-soft BPA-free toothbrush bristles for gentle daily brushing.\n• Neem wood tongue cleaners for everyday tongue hygiene."
   },
   {
-    "id": 8,
-    "name": "ZOHD Bamboo Toothbrush & Wooden Tongue Cleaner Combo",
-    "sku": "ZOHD-BTB-008",
+    "id": 4,
+    "name": "ZOHD Kids Oral Care Combo",
+    "sku": "ZOHD-BTB-004",
     "keywords": [
-      "1 Adult Soft Bristle Bamboo Toothbrush & 1 Tongue Cleaner",
-      "Eco-Friendly Sustainable Oral Care Kit"
+      "2 Bamboo Toothbrushes & 2 Wooden Tongue Cleaners",
+      "Soft Bristles",
+      "Eco-Friendly",
+      "Natural Oral Hygiene Kit"
     ],
-    "price": 123,
-    "mrp": 144,
-    "category": "Adult Oral Care",
-    "image": "images/neem-combo.jpg",
-    "images": ["images/neem-combo.jpg"],
-    "variants": ["1 adult toothbrush + 1 tongue cleaner"],
+    "price": 230,
+    "mrp": 386,
+    "category": "Kids Oral Care",
+    "image": "images/products/kids-oral-care-combo-main.png",
+    "images": [
+      "images/products/kids-oral-care-combo-main.png",
+      "images/products/kids-oral-care-combo-lifestyle.png",
+      "images/products/kids-oral-care-combo-detail.png",
+      "images/products/kids-oral-care-combo-size-guide.png",
+      "images/products/kids-oral-care-combo-tongue-cleaners.png"
+    ],
+    "variants": ["2 kids' toothbrushes + 2 tongue cleaners"],
     "stock": "In Stock",
-    "description": "Make your everyday oral hygiene routine more eco-conscious with the ZOHD Bamboo Toothbrush and Neem Wood Tongue Cleaner Combo. This convenient oral care set includes one bamboo toothbrush with soft BPA-free bristles and one reusable neem wood tongue cleaner.\n\n**Complete Oral Care in One Convenient Combo**\nIncludes one toothbrush and one tongue cleaning tool designed for individuals looking for practical alternatives to conventional plastic oral care products. The compact set is suitable for everyday use at home and for travel.\n\n**Soft BPA-Free Bristles & Reusable Neem Wood**\nFeatures soft BPA-free bristles for comfortable everyday brushing alongside a natural neem wood tongue cleaner to help remove accumulated coating and support fresher breath.\n\n**Why Choose the ZOHD Bamboo Toothbrush and Neem Wood Tongue Cleaner Combo?**\n• Complete oral care set containing two essential items.\n• Includes one bamboo toothbrush with soft BPA-free bristles.\n• Includes one reusable neem wood tongue cleaner.\n• Natural bamboo handle as an alternative to plastic handles.\n• Suitable for everyday use at home or while travelling."
+    "description": "Make your child's daily oral hygiene routine more comfortable and environmentally conscious with the ZOHD Kids Oral Care Combo. This practical oral care set includes two bamboo toothbrushes for kids and two reusable neem wood tongue cleaners.\n\n**Complete Oral Care Combo for Kids**\nThe ZOHD Kids Oral Care Combo contains four oral care essentials: two kids' bamboo toothbrushes and two reusable neem wood tongue cleaners. This combination helps parents include both toothbrushing and tongue cleaning in their family's daily routine.\n\n**Reusable Neem Wood Tongue Cleaners**\nMade from natural neem wood, these reusable tongue cleaners offer an alternative to conventional plastic tongue cleaning tools. Tongue cleaning helps remove accumulated coating and debris from the surface of the tongue.\n\n**Why Choose the ZOHD Kids Oral Care Combo?**\n• Complete oral care set containing four items.\n• Includes two bamboo toothbrushes designed for kids.\n• Includes two reusable neem wood tongue cleaners.\n• Ultra-soft BPA-free toothbrush bristles for gentle daily brushing.\n• Neem wood tongue cleaners for everyday tongue hygiene."
+  },
+  {
+    "id": 4,
+    "name": "ZOHD Kids Oral Care Combo",
+    "sku": "ZOHD-BTB-004",
+    "keywords": [
+      "2 Bamboo Toothbrushes & 2 Wooden Tongue Cleaners",
+      "Soft Bristles",
+      "Eco-Friendly",
+      "Natural Oral Hygiene Kit"
+    ],
+    "price": 230,
+    "mrp": 386,
+    "category": "Kids Oral Care",
+    "image": "images/products/kids-oral-care-combo-main.png",
+    "images": [
+      "images/products/kids-oral-care-combo-main.png",
+      "images/products/kids-oral-care-combo-lifestyle.png",
+      "images/products/kids-oral-care-combo-detail.png",
+      "images/products/kids-oral-care-combo-size-guide.png",
+      "images/products/kids-oral-care-combo-tongue-cleaners.png"
+    ],
+    "variants": ["2 kids' toothbrushes + 2 tongue cleaners"],
+    "stock": "In Stock",
+    "description": "Make your child's daily oral hygiene routine more comfortable and environmentally conscious with the ZOHD Kids Oral Care Combo. This practical oral care set includes two bamboo toothbrushes for kids and two reusable neem wood tongue cleaners.\n\n**Complete Oral Care Combo for Kids**\nThe ZOHD Kids Oral Care Combo contains four oral care essentials: two kids' bamboo toothbrushes and two reusable neem wood tongue cleaners. This combination helps parents include both toothbrushing and tongue cleaning in their family's daily routine.\n\n**Reusable Neem Wood Tongue Cleaners**\nMade from natural neem wood, these reusable tongue cleaners offer an alternative to conventional plastic tongue cleaning tools. Tongue cleaning helps remove accumulated coating and debris from the surface of the tongue.\n\n**Why Choose the ZOHD Kids Oral Care Combo?**\n• Complete oral care set containing four items.\n• Includes two bamboo toothbrushes designed for kids.\n• Includes two reusable neem wood tongue cleaners.\n• Ultra-soft BPA-free toothbrush bristles for gentle daily brushing.\n• Neem wood tongue cleaners for everyday tongue hygiene."
   }
 ]
