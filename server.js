@@ -475,6 +475,34 @@ const publicFiles = new Map([
   ["/images/eco-notebook.jpg", ["public/images/eco-notebook.jpg", "image/jpeg"]]
 ]);
 
+const imageContentTypes = new Map([
+  [".gif", "image/gif"],
+  [".jpeg", "image/jpeg"],
+  [".jpg", "image/jpeg"],
+  [".png", "image/png"],
+  [".svg", "image/svg+xml"],
+  [".webp", "image/webp"]
+]);
+
+function addPublicImages(directory) {
+  for (const entry of fs.readdirSync(path.join(ROOT, directory), { withFileTypes: true })) {
+    const relativePath = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      addPublicImages(relativePath);
+      continue;
+    }
+    if (!entry.isFile()) continue;
+
+    const contentType = imageContentTypes.get(path.extname(entry.name).toLowerCase());
+    if (contentType) {
+      const urlPath = `/${path.relative("public", relativePath).split(path.sep).join("/")}`;
+      publicFiles.set(urlPath, [relativePath, contentType]);
+    }
+  }
+}
+
+addPublicImages("public/images");
+
 const server = http.createServer(async (req, res) => {
   let pathname;
   try {
