@@ -20,17 +20,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function loadProducts() {
   try {
-    const response = await fetch('data/products.json');
+    const response = await fetch("/api/products");
     if (!response.ok) {
       throw new Error(`Unable to load product catalog (HTTP ${response.status}).`);
     }
     const catalog = await response.json();
     if (!Array.isArray(catalog)) throw new Error("The product catalog response is invalid.");
     
-    products = catalog.map(product => ({
-      ...product,
-      selectedVariant: product.variants ? product.variants[0] : ""
-    }));
+    const uniqueCatalog = new Map();
+    catalog.forEach(product => {
+      const key = String(product.sku || product.id);
+      if (!uniqueCatalog.has(key)) uniqueCatalog.set(key, product);
+    });
+    products = [...uniqueCatalog.values()].map(product => {
+      const tags = Array.isArray(product.tags) ? [...product.tags] : [];
+      if (!tags.includes("bamboo") && !tags.includes("neem")) {
+        const materialText = [
+          product.name,
+          product.description,
+          ...(product.keywords || [])
+        ].join(" ");
+        if (/\bneem\b/i.test(materialText)) tags.push("neem");
+        else if (/\bbamboo\b/i.test(materialText)) tags.push("bamboo");
+      }
+      return {
+        ...product,
+        tags: [...new Set(tags.map(tag => String(tag).toLocaleLowerCase()))],
+        selectedVariant: product.variants ? product.variants[0] : ""
+      };
+    });
 
     cart = savedCart.flatMap(item => {
       const product = products.find(entry =>
@@ -110,6 +128,9 @@ function updateProductSearchStatus() {
 
 function productMatchesSearch(product) {
   if (!productSearchQuery) return true;
+  if (productSearchQuery === "bamboo" || productSearchQuery === "neem") {
+    return (product.tags || []).includes(productSearchQuery);
+  }
   const searchableText = [
     product.name,
     product.sku,
@@ -538,6 +559,8 @@ function updateCartUI() {
   const subtotalElem = document.getElementById("cart-subtotal");
   if (countElem) countElem.innerText = totalCount;
   if (subtotalElem) subtotalElem.innerText = `₹${subtotal}`;
+  const checkoutButton = document.querySelector("#cart-drawer .btn-whatsapp");
+  if (checkoutButton) checkoutButton.disabled = !(subtotal > 0);
 
   const container = document.getElementById("cart-items-container");
   if (!container) return;
@@ -547,16 +570,16 @@ function updateCartUI() {
   } else {
     container.innerHTML = cart.map((item, idx) => `
       <div class="cart-item-card">
-        <img src="${escapeHtml(item.image)}" class="cart-item-img" />
+        <img src="${escapeHtml(item.image)}" class="cart-item-img" alt="${escapeHtml(item.name)}" />
         <div style="flex:1;">
           <strong style="font-size:0.92rem; color:var(--text-dark);">${escapeHtml(item.name)}</strong>
           <p style="font-size:0.78rem; color:var(--text-light); margin:0.2rem 0 0.6rem;">Variant: ${escapeHtml(item.variant)}</p>
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <span style="font-weight:800; color:var(--primary-green);">₹${item.price * item.quantity}</span>
             <div class="qty-control">
-              <button class="qty-btn" onclick="updateCartQty(${idx}, -1)">-</button>
+              <button type="button" class="qty-btn" onclick="updateCartQty(${idx}, -1)" aria-label="Remove one ${escapeHtml(item.name)}">-</button>
               <span class="qty-number">${item.quantity}</span>
-              <button class="qty-btn" onclick="updateCartQty(${idx}, 1)">+</button>
+              <button type="button" class="qty-btn" onclick="updateCartQty(${idx}, 1)" aria-label="Add one ${escapeHtml(item.name)}">+</button>
             </div>
           </div>
         </div>
@@ -583,7 +606,8 @@ function toggleCart(open = null) {
 
 async function checkoutViaWhatsApp() {
   const status = document.getElementById("checkout-status");
-  if (cart.length === 0) {
+  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  if (!(subtotal > 0)) {
     if (status) status.textContent = "Your shopping bag is empty.";
     return;
   }
@@ -680,14 +704,8 @@ function openAuthModal() {
   const regContainer = document.getElementById("register-form-container");
   if (regContainer) regContainer.classList.add("hidden");
   
-  const adminContainer = document.getElementById("admin-login-container");
-  if (adminContainer) adminContainer.classList.add("hidden");
-
   const guestDivider = document.querySelector(".guest-divider-wrapper");
   if (guestDivider) guestDivider.classList.toggle("hidden", isSignedIn);
-
-  const adminSignin = document.getElementById("customer-admin-signin");
-  if (adminSignin) adminSignin.classList.toggle("hidden", isSignedIn);
 
   if (isSignedIn) {
     const accName = document.getElementById("customer-account-name");
@@ -723,9 +741,15 @@ function switchAuthMode(mode) {
   if (regContainer) regContainer.classList.toggle("hidden", isLogin);
 
   const loginTab = document.getElementById("tab-login-btn");
-  if (loginTab) loginTab.classList.toggle("active", isLogin);
+  if (loginTab) {
+    loginTab.classList.toggle("active", isLogin);
+    loginTab.setAttribute("aria-selected", String(isLogin));
+  }
   const registerTab = document.getElementById("tab-register-btn");
-  if (registerTab) registerTab.classList.toggle("active", !isLogin);
+  if (registerTab) {
+    registerTab.classList.toggle("active", !isLogin);
+    registerTab.setAttribute("aria-selected", String(!isLogin));
+  }
 
   ["customer-login-error", "customer-register-error"].forEach(id => {
     const error = document.getElementById(id);
@@ -938,84 +962,3 @@ window.addEventListener('load', () => {
   if (!loader) return;
   setTimeout(() => loader.classList.add('hidden'), 600);
 });
-function showAdminSignIn() {
-  alert("Admin portal is disabled in static mode.");
-}
-
-function showCustomerSignIn() {
-  const tabs = document.querySelector(".auth-tabs");
-  if (tabs) tabs.classList.remove("hidden");
-  const guestDivider = document.querySelector(".guest-divider-wrapper");
-  if (guestDivider) guestDivider.classList.remove("hidden");
-  const adminSignin = document.getElementById("customer-admin-signin");
-  if (adminSignin) adminSignin.classList.remove("hidden");
-  const adminContainer = document.getElementById("admin-login-container");
-  if (adminContainer) adminContainer.classList.add("hidden");
-  switchAuthMode("login");
-}
-function showAdminSignIn() {
-  const summary = document.getElementById("customer-account-summary");
-  if (summary) summary.classList.add("hidden");
-
-  const tabs = document.querySelector(".auth-tabs");
-  if (tabs) tabs.classList.add("hidden");
-
-  const loginContainer = document.getElementById("login-form-container");
-  if (loginContainer) loginContainer.classList.add("hidden");
-
-  const regContainer = document.getElementById("register-form-container");
-  if (regContainer) regContainer.classList.add("hidden");
-
-  const guestDivider = document.querySelector(".guest-divider-wrapper");
-  if (guestDivider) guestDivider.classList.add("hidden");
-
-  const customerSigninBtn = document.getElementById("customer-admin-signin");
-  if (customerSigninBtn) customerSigninBtn.classList.add("hidden");
-
-  const adminContainer = document.getElementById("admin-login-container");
-  if (adminContainer) adminContainer.classList.remove("hidden");
-
-  const adminError = document.getElementById("main-admin-error");
-  if (adminError) adminError.textContent = "";
-
-  const modal = document.getElementById("auth-modal");
-  if (modal) modal.classList.add("active");
-}
-const adminForm = document.getElementById("main-admin-login-form");
-if (adminForm) {
-  adminForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-
-    const adminIdInput = document.getElementById("main-admin-id");
-    const passwordInput = document.getElementById("main-admin-password");
-    const errorElem = document.getElementById("main-admin-error");
-    if (errorElem) errorElem.textContent = "";
-
-    try {
-      const response = await fetch("/api/admin/login", {
-        method: "POST",
-        credentials: "same-origin",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          adminId: adminIdInput.value,
-          password: passwordInput.value
-        })
-      });
-
-      if (!response.ok) {
-        let message = "Unable to sign in to the admin portal.";
-        try {
-          const result = await response.json();
-          if (result.error) message = result.error;
-        } catch {
-          message = `Admin sign-in failed (HTTP ${response.status}).`;
-        }
-        throw new Error(message);
-      }
-
-      window.location.assign("/admin/dashboard");
-    } catch (error) {
-      if (errorElem) errorElem.textContent = error.message;
-    }
-  });
-}

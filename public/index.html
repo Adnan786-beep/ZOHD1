@@ -25,7 +25,7 @@
 <body>
   <div id="page-loader" class="page-loader" aria-live="polite" aria-label="Loading website">
     <div class="loader-content">
-      <img src="images/zohd-mark.png" alt="ZOHD logo" class="loader-logo" width="100" height="100" />
+      <img src="images/zohd-mark.png" alt="" class="loader-logo" width="100" height="100" />
       <div class="loader-spinner"></div>
     </div>
   </div>
@@ -39,7 +39,7 @@
   <header class="navbar">
     <div class="nav-container">
       <a class="brand-logo" onclick="showSection('home-section')" aria-label="ZOHD home">
-        <img src="images/zohd-mark.png" alt="ZOHD logo mark" class="brand-logo-image" width="40" height="40" />
+        <img src="images/zohd-mark.png" alt="" class="brand-logo-image" width="40" height="40" />
         <span class="brand-logo-text" aria-hidden="true">ZOHD</span>
       </a>
 
@@ -54,10 +54,10 @@
         <button class="icon-btn search-btn" type="button" onclick="openProductSearch()" aria-label="Search products">
           <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
         </button>
-        <button class="icon-btn" onclick="openAuthModal()">
+        <button class="icon-btn" type="button" onclick="openAuthModal()" aria-label="Open customer account">
           <i class="fa-regular fa-user"></i> <span id="user-display-name">Login / Register</span>
         </button>
-        <button class="icon-btn cart-btn" onclick="toggleCart(true)">
+        <button class="icon-btn cart-btn" type="button" onclick="toggleCart(true)" aria-label="Open shopping bag">
           <i class="fa-solid fa-bag-shopping"></i>
           <span class="cart-badge" id="cart-count">0</span>
         </button>
@@ -310,7 +310,7 @@
   <div id="cart-drawer" class="cart-drawer">
     <div class="cart-header">
       <h3><i class="fa-solid fa-bag-shopping"></i> Shopping Bag</h3>
-      <button class="close-drawer-btn" onclick="toggleCart(false)">&times;</button>
+      <button class="close-drawer-btn" type="button" onclick="toggleCart(false)" aria-label="Close shopping bag">&times;</button>
     </div>
     <div class="cart-items-body" id="cart-items-container"></div>
     <div class="cart-footer">
@@ -321,7 +321,7 @@
       <p style="font-size:0.82rem; color:var(--text-light); margin-bottom:1.2rem;">
         <i class="fa-solid fa-truck-fast"></i> Sign in before checkout to include your saved delivery address and location in your WhatsApp order.
       </p>
-      <button class="btn btn-whatsapp full-width" onclick="checkoutViaWhatsApp()">
+      <button class="btn btn-whatsapp full-width" type="button" onclick="checkoutViaWhatsApp()" disabled>
         <i class="fa-brands fa-whatsapp"></i> Place Order on WhatsApp
       </button>
       <p id="checkout-status" class="checkout-status" role="status" aria-live="polite"></p>
@@ -333,9 +333,9 @@
     <div class="modal-body" role="dialog" aria-modal="true" aria-label="Customer account">
       <button type="button" aria-label="Close account dialog" style="position:absolute; top:1.2rem; right:1.2rem; background:none; border:none; font-size:1.6rem; cursor:pointer;" onclick="closeModal('auth-modal')">&times;</button>
       
-      <div class="auth-tabs">
-        <button class="auth-tab-btn active" id="tab-login-btn" onclick="switchAuthMode('login')">Sign In</button>
-        <button class="auth-tab-btn" id="tab-register-btn" onclick="switchAuthMode('register')">Create Account</button>
+      <div class="auth-tabs" role="tablist" aria-label="Customer account options">
+        <button type="button" role="tab" aria-selected="true" aria-controls="login-form-container" class="auth-tab-btn active" id="tab-login-btn" onclick="switchAuthMode('login')">Sign In</button>
+        <button type="button" role="tab" aria-selected="false" aria-controls="register-form-container" class="auth-tab-btn" id="tab-register-btn" onclick="switchAuthMode('register')">Create Account</button>
       </div>
 
       <div id="customer-account-summary" class="hidden">
@@ -349,25 +349,7 @@
         <p id="customer-logout-error" role="alert" aria-live="polite" style="color:#b42318;"></p>
       </div>
 
-      <div id="admin-login-container" class="hidden">
-        <h3 style="margin-bottom:0.5rem; color:var(--primary-green);">Admin sign in</h3>
-        <p style="margin-bottom:1.2rem; color:var(--text-light); font-size:0.88rem;">Sign in with your administrator ID and password.</p>
-        <form id="main-admin-login-form">
-          <div class="form-group">
-            <label for="main-admin-id">Admin ID</label>
-            <input type="text" id="main-admin-id" autocomplete="username" required />
-          </div>
-          <div class="form-group">
-            <label for="main-admin-password">Password</label>
-            <input type="password" id="main-admin-password" autocomplete="current-password" required />
-          </div>
-          <button id="main-admin-submit" type="submit" class="btn btn-primary full-width">Sign in to Admin</button>
-          <p id="main-admin-error" role="alert" aria-live="polite" style="min-height:1.4rem; margin:0.8rem 0 0; color:#b42318; font-size:0.88rem;"></p>
-        </form>
-        <button type="button" class="btn btn-outline full-width" onclick="showCustomerSignIn()" style="margin-top:0.5rem;">Back to customer sign in</button>
-      </div>
-
-      <div id="login-form-container">
+      <div id="login-form-container" role="tabpanel" aria-labelledby="tab-login-btn">
         <form onsubmit="handleCustomerAuth(event, 'login')">
           <div class="form-group">
             <label for="login-id">Mobile Number or Email</label>
@@ -382,7 +364,7 @@
         </form>
       </div>
 
-      <div id="register-form-container" class="hidden">
+      <div id="register-form-container" class="hidden" role="tabpanel" aria-labelledby="tab-register-btn">
         <form onsubmit="handleCustomerAuth(event, 'register')">
           <div class="form-group">
             <label for="reg-name">Full Name <span class="required-mark" aria-label="required">*</span></label>
@@ -416,12 +398,11 @@
 
       <!-- CENTERED GUEST BUTTON -->
       <div class="guest-divider-wrapper">
-        <button class="btn btn-guest-middle full-width" onclick="continueAsGuest()">
+        <button type="button" class="btn btn-guest-middle full-width" onclick="continueAsGuest()">
           <i class="fa-solid fa-user-clock"></i> Continue as Guest
         </button>
         <div class="divider-line"><span class="login-divider-label">OR</span></div>
       </div>
-      <button id="customer-admin-signin" type="button" class="btn btn-outline full-width customer-admin-signin" onclick="showAdminSignIn()">Admin sign in</button>
     </div>
   </div>
 

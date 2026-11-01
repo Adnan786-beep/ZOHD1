@@ -12,6 +12,7 @@
     "price": 123,
     "mrp": 144,
     "category": "Kids Oral Care",
+    "tags": ["bamboo", "kids"],
     "image": "images/products/kids-bamboo-toothbrush-pack-main.png",
     "images": [
       "images/products/kids-bamboo-toothbrush-pack-main.png",
@@ -37,6 +38,7 @@
     "price": 183,
     "mrp": 288,
     "category": "Family Oral Care",
+    "tags": ["bamboo", "family"],
     "image": "images/products/family-bamboo-toothbrush-pack-main.png",
     "images": [
       "images/products/family-bamboo-toothbrush-pack-main.png",
@@ -62,6 +64,7 @@
     "price": 183,
     "mrp": 288,
     "category": "Adult Oral Care",
+    "tags": ["bamboo", "adults"],
     "image": "images/products/adult-bamboo-toothbrush-pack-main.png",
     "images": [
       "images/products/adult-bamboo-toothbrush-pack-main.png",
@@ -87,6 +90,7 @@
     "price": 230,
     "mrp": 386,
     "category": "Kids Oral Care",
+    "tags": ["neem", "kids"],
     "image": "images/products/kids-oral-care-combo-main.png",
     "images": [
       "images/products/kids-oral-care-combo-main.png",
@@ -110,6 +114,7 @@
     "price": 261,
     "mrp": 458,
     "category": "Family Oral Care",
+    "tags": ["neem", "family"],
     "image": "images/products/zohd-oral-care-kit.png",
     "images": ["images/products/zohd-oral-care-kit.png"],
     "variants": ["2 adult + 1 kids' toothbrush + 2 tongue cleaners"],
@@ -127,6 +132,7 @@
     "price": 198,
     "mrp": 386,
     "category": "Adult Oral Care",
+    "tags": ["neem", "adults"],
     "image": "images/neem-combo.jpg",
     "images": ["images/neem-combo.jpg"],
     "variants": ["2 adult toothbrushes + 2 tongue cleaners"],
@@ -144,6 +150,7 @@
     "price": 245,
     "mrp": 409,
     "category": "Family Oral Care",
+    "tags": ["neem", "family"],
     "image": "images/products/zohd-oral-care-kit.png",
     "images": ["images/products/zohd-oral-care-kit.png"],
     "variants": ["3 adult + 1 kids' toothbrush + 1 tongue cleaner"],
@@ -161,6 +168,7 @@
     "price": 123,
     "mrp": 144,
     "category": "Adult Oral Care",
+    "tags": ["neem", "adults"],
     "image": "images/neem-combo.jpg",
     "images": ["images/neem-combo.jpg"],
     "variants": ["1 adult toothbrush + 1 tongue cleaner"],

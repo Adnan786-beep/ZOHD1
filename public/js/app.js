@@ -88,6 +88,17 @@ async function loadProducts() {
     products = FALLBACK_PRODUCTS;
   }
 
+  const savedCart = Array.isArray(cart) ? cart : [];
+  cart = savedCart.flatMap(item => {
+    const product = products.find(entry =>
+      String(entry._id || entry.id) === String(item._id || item.id)
+    );
+    if (!product || !Number.isInteger(item.quantity) || item.quantity <= 0) return [];
+    const variants = product.variants && product.variants.length ? product.variants : ["Standard"];
+    const variant = item.variant || product.selectedVariant || variants[0];
+    return variants.includes(variant) ? [{ ...product, variant, quantity: item.quantity }] : [];
+  });
+  saveCart();
   renderProducts();
 }
 
@@ -143,10 +154,13 @@ function renderReviews(reviews) {
 
 // RENDER PRODUCTS
 function renderProducts() {
-  const container = document.getElementById("product-grid-container");
+  const container = document.getElementById("product-grid-container")
+    || document.getElementById("shop-catalog-container");
   if (!container) return;
 
-  container.innerHTML = products.map(p => `
+  container.innerHTML = products.map(p => {
+    const productId = p._id || p.id;
+    return `
     <div class="product-card">
       <img src="${p.image}" class="product-img" alt="${p.name}" />
       <div class="product-info">
@@ -155,22 +169,23 @@ function renderProducts() {
         
         <div class="variant-pills">
           ${(p.variants || ['Standard']).map(v => `
-            <div class="variant-pill ${p.selectedVariant === v ? 'active' : ''}" onclick="selectVariant('${p._id}', '${v}')">${v}</div>
+            <button type="button" class="variant-pill ${p.selectedVariant === v ? 'active' : ''}" aria-pressed="${p.selectedVariant === v}" onclick='selectVariant("${productId}", this.dataset.variant)' data-variant="${v}">${v}</button>
           `).join('')}
         </div>
 
         <div class="product-price">₹${p.price}</div>
 
-        <button class="btn btn-primary full-width" onclick="addToCart('${p._id}')">
+        <button type="button" class="btn btn-primary full-width" onclick="addToCart('${productId}')">
           <i class="fa-solid fa-bag-shopping"></i> Add to Bag
         </button>
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 }
 
 function selectVariant(productId, variant) {
-  const p = products.find(x => x._id === productId || x.id === productId);
+  const p = products.find(x => String(x._id || x.id) === String(productId));
   if (p) p.selectedVariant = variant;
   renderProducts();
 }
@@ -182,10 +197,12 @@ function saveCart() {
 }
 
 function addToCart(productId) {
-  const p = products.find(x => x._id === productId || x.id === productId);
+  const p = products.find(x => String(x._id || x.id) === String(productId));
   if (!p) return;
 
-  const existing = cart.find(x => (x._id === productId || x.id === productId) && x.variant === p.selectedVariant);
+  const existing = cart.find(x =>
+    String(x._id || x.id) === String(productId) && x.variant === p.selectedVariant
+  );
   if (existing) {
     existing.quantity += 1;
   } else {
@@ -211,6 +228,8 @@ function updateCartUI() {
 
   const subtotalEl = document.getElementById("cart-subtotal");
   if (subtotalEl) subtotalEl.innerText = `₹${subtotal}`;
+  const checkoutButton = document.querySelector("#cart-drawer .btn-whatsapp");
+  if (checkoutButton) checkoutButton.disabled = !(subtotal > 0);
 
   const container = document.getElementById("cart-items-container");
   if (!container) return;
@@ -220,16 +239,16 @@ function updateCartUI() {
   } else {
     container.innerHTML = cart.map((item, idx) => `
       <div class="cart-item-card">
-        <img src="${item.image}" class="cart-item-img" />
+        <img src="${item.image}" class="cart-item-img" alt="${item.name}" />
         <div style="flex:1;">
           <strong style="font-size:0.92rem; color:var(--text-dark);">${item.name}</strong>
           <p style="font-size:0.78rem; color:var(--text-light); margin:0.2rem 0 0.6rem;">Variant: ${item.variant}</p>
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <span style="font-weight:800; color:var(--primary-green);">₹${item.price * item.quantity}</span>
             <div class="qty-control">
-              <button class="qty-btn" onclick="updateCartQty(${idx}, -1)">-</button>
+              <button type="button" class="qty-btn" onclick="updateCartQty(${idx}, -1)" aria-label="Remove one ${item.name}">-</button>
               <span class="qty-number">${item.quantity}</span>
-              <button class="qty-btn" onclick="updateCartQty(${idx}, 1)">+</button>
+              <button type="button" class="qty-btn" onclick="updateCartQty(${idx}, 1)" aria-label="Add one ${item.name}">+</button>
             </div>
           </div>
         </div>
@@ -257,14 +276,13 @@ function toggleCart(open = null) {
 
 // WHATSAPP CHECKOUT & BACKEND ORDER LOG
 async function checkoutViaWhatsApp() {
-  if (cart.length === 0) return alert("Your shopping bag is empty!");
+  const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  if (!(total > 0)) return alert("Your shopping bag is empty!");
 
   let msg = "Hi ZOHD Team! I would like to place an order:\n\n";
-  let total = 0;
 
   const orderItems = cart.map((item, i) => {
     const itemTot = item.price * item.quantity;
-    total += itemTot;
     msg += `${i + 1}. *${item.name}*\n   • Variant: ${item.variant}\n   • Qty: ${item.quantity}\n   • Price: ₹${itemTot}\n\n`;
     return { productName: item.name, variant: item.variant, quantity: item.quantity, price: item.price };
   });
@@ -320,8 +338,14 @@ function switchAuthMode(mode) {
   const formLogin = document.getElementById("login-form-container");
   const formReg = document.getElementById("register-form-container");
 
-  if (tabLogin) tabLogin.classList.toggle("active", mode === 'login');
-  if (tabReg) tabReg.classList.toggle("active", mode === 'register');
+  if (tabLogin) {
+    tabLogin.classList.toggle("active", mode === 'login');
+    tabLogin.setAttribute("aria-selected", String(mode === 'login'));
+  }
+  if (tabReg) {
+    tabReg.classList.toggle("active", mode === 'register');
+    tabReg.setAttribute("aria-selected", String(mode === 'register'));
+  }
   if (formLogin) formLogin.classList.toggle("hidden", mode !== 'login');
   if (formReg) formReg.classList.toggle("hidden", mode !== 'register');
 }

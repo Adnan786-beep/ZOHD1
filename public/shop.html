@@ -20,8 +20,8 @@
         <a href="shop.html" class="active">Shop Catalog</a>
       </nav>
       <div class="nav-actions">
-        <button class="icon-btn" onclick="openAuthModal()"><i class="fa-regular fa-user"></i> <span id="user-display-name">Login</span></button>
-        <button class="icon-btn cart-btn" onclick="toggleCart()"><i class="fa-solid fa-bag-shopping"></i> <span class="cart-badge" id="cart-count">0</span></button>
+        <button class="icon-btn" type="button" onclick="openAuthModal()" aria-label="Open customer account"><i class="fa-regular fa-user"></i> <span id="user-display-name">Login</span></button>
+        <button class="icon-btn cart-btn" type="button" onclick="toggleCart()" aria-label="Open shopping bag"><i class="fa-solid fa-bag-shopping"></i> <span class="cart-badge" id="cart-count">0</span></button>
       </div>
     </div>
   </header>
@@ -43,12 +43,12 @@
   <div id="cart-drawer" class="cart-drawer">
     <div class="cart-header">
       <h3><i class="fa-solid fa-bag-shopping"></i> Shopping Bag</h3>
-      <button class="close-drawer-btn" onclick="toggleCart(false)">&times;</button>
+      <button class="close-drawer-btn" type="button" onclick="toggleCart(false)" aria-label="Close shopping bag">&times;</button>
     </div>
     <div class="cart-items-body" id="cart-items-container"></div>
     <div class="cart-footer">
       <div class="cart-summary-row"><span>Subtotal:</span><span id="cart-subtotal">₹0</span></div>
-      <button class="btn btn-whatsapp full-width" onclick="checkoutViaWhatsApp()"><i class="fa-brands fa-whatsapp"></i> Place Order on WhatsApp</button>
+      <button class="btn btn-whatsapp full-width" type="button" onclick="checkoutViaWhatsApp()" disabled><i class="fa-brands fa-whatsapp"></i> Place Order on WhatsApp</button>
     </div>
   </div>
 
