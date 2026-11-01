@@ -4,7 +4,7 @@ The storefront can be served as static files, while the API runs as a Vercel Nod
 
 ## 1. Connect Neon
 
-1. Deploy the project from a connected Git repository, or run `npx vercel` from this project folder and follow the CLI prompts. This workspace currently has no Git remote configured.
+1. Deploy the project from a connected Git repository, or run `npx vercel` from this project folder and follow the CLI prompts. Set the Vercel project's Root Directory to the repository root (the folder containing `vercel.json`, `package.json`, and `api/`), not `public/`. This workspace currently has no Git remote configured.
 2. Add a Neon Postgres database from the Vercel Marketplace and connect it to the project.
 3. Make sure the project has a `DATABASE_URL` environment variable containing the Neon connection string.
 

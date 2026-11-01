@@ -802,7 +802,7 @@ async function handleCustomerAuth(event, mode) {
       result = await response.json();
     } catch {
       if (response.status === 404) {
-        throw new Error("The customer account API was not found. Redeploy the latest site/API files and open the site from that deployment.");
+        throw new Error("The customer account API is missing from this deployment. In Vercel, set Root Directory to the repository root (not public/) and redeploy the latest commit.");
       }
       throw new Error(response.ok
         ? "The server returned an invalid sign-in response."
@@ -810,7 +810,7 @@ async function handleCustomerAuth(event, mode) {
     }
     if (!response.ok) {
       if (response.status === 404) {
-        throw new Error("The customer account API was not found. Redeploy the latest site/API files and open the site from that deployment.");
+        throw new Error("The customer account API is missing from this deployment. In Vercel, set Root Directory to the repository root (not public/) and redeploy the latest commit.");
       }
       throw new Error(result.error || `Account request failed (HTTP ${response.status}).`);
     }
