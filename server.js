@@ -456,6 +456,7 @@ const publicFiles = new Map([
   ["/js/index.js", ["public/js/index.js", "text/javascript; charset=utf-8"]],
   ["/css/styles.css", ["public/css/styles.css", "text/css; charset=utf-8"]],
   ["/css/index.css", ["public/css/index.css", "text/css; charset=utf-8"]],
+  ["/data/products.json", ["public/data/products.json", "application/json; charset=utf-8"]],
   ["/images/zohd-mark.png", ["public/images/zohd-mark.png", "image/png"]],
   ["/public/images/zohd-mark.png", ["public/images/zohd-mark.png", "image/png"]],
   ["/public/images/zohd-logo.png", ["public/images/zohd-logo.png", "image/png"]],

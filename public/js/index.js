@@ -20,7 +20,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function loadProducts() {
   try {
-    const response = await fetch("/api/products");
+    let response = await fetch("/api/products");
+    if (response.status === 404) {
+      console.warn("Product API route is unavailable; loading the published catalog instead.");
+      response = await fetch("data/products.json");
+    }
     if (!response.ok) {
       throw new Error(`Unable to load product catalog (HTTP ${response.status}).`);
     }
