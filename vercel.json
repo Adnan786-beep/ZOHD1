@@ -2,11 +2,7 @@
   "framework": null,
   "outputDirectory": "public",
   "rewrites": [
-    { "source": "/admin", "destination": "/api/admin" },
-    { "source": "/admin/login", "destination": "/api/admin/login" },
-    { "source": "/admin/logout", "destination": "/api/admin/logout" },
-    { "source": "/admin/dashboard", "destination": "/api/admin/dashboard" },
-    { "source": "/admin.html", "destination": "/api/admin/dashboard" },
-    { "source": "/admin-login.html", "destination": "/api/admin" }
+    { "source": "/admin/:path*", "destination": "/api/admin" },
+    { "source": "/admin", "destination": "/api/admin" }
   ]
 }
