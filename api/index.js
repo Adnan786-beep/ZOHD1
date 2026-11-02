@@ -1,20 +1,22 @@
 export default function handler(req, res) {
   const url = req.url;
 
-  // --- ADMIN ROUTES ---
-  if (url.includes('/admin/login')) {
-    return res.status(200).json({ success: true, message: "Admin Login Endpoint" });
-  }
-  
-  if (url.includes('/admin/dashboard')) {
-    return res.status(200).json({ success: true, message: "Admin Dashboard Endpoint" });
+  // Handle Admin Requests
+  if (url.startsWith('/api/admin') || url.startsWith('/admin')) {
+    if (url.includes('/login')) {
+      return res.status(200).json({ success: true, message: "Admin Login Success" });
+    }
+    if (url.includes('/dashboard')) {
+      return res.status(200).json({ success: true, message: "Admin Dashboard Access" });
+    }
+    return res.status(200).json({ message: "Admin Base API" });
   }
 
-  // --- CUSTOMER API ROUTES ---
-  if (url.includes('/customer')) {
+  // Handle Customer / Product Requests
+  if (url.startsWith('/api/customer')) {
     return res.status(200).json({ success: true, message: "Customer Account API Active" });
   }
 
-  // Default Fallback
-  return res.status(200).json({ message: "API Server running successfully" });
+  // Default Route
+  return res.status(200).json({ message: "ZOHD API Server Operational" });
 }
