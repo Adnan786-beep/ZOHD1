@@ -2,7 +2,7 @@
   "framework": null,
   "outputDirectory": "public",
   "rewrites": [
-    { "source": "/admin/:path*", "destination": "/api/admin" },
-    { "source": "/admin", "destination": "/api/admin" }
+    { "source": "/admin/:path*", "destination": "/api/admin.js" },
+    { "source": "/admin", "destination": "/api/admin.js" }
   ]
 }
