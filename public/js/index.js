@@ -5,6 +5,9 @@ let currentUser = null;
 let customerOrders = [];
 let productDetailsTrigger = null;
 let productSearchQuery = "";
+let activeProductGallerySwipe = null;
+let suppressProductGalleryClickUntil = 0;
+const PRODUCT_GALLERY_SWIPE_THRESHOLD = 45;
 
 document.addEventListener("DOMContentLoaded", () => {
   loadProducts();
@@ -197,15 +200,23 @@ function renderProducts(containerId, limit = products.length) {
   }
   container.innerHTML = matchingProducts.slice(0, limit).map(p => {
     const variants = p.variants || [];
+    const images = Array.isArray(p.images) && p.images.length ? p.images : [p.image];
     return `
       <div class="product-card" data-product-card data-product-id="${p.id}" role="group" aria-label="${escapeHtml(p.name)}">
-        <div class="product-gallery">
-          <img src="${escapeHtml(p.image)}" class="product-img" alt="${escapeHtml(p.name)}" />
-          ${(p.images || [p.image]).length > 1 ? `
+        <div class="product-gallery" data-product-gallery data-product-id="${p.id}">
+          <img src="${escapeHtml(images[0])}" class="product-img" data-gallery-image-index="0" alt="${escapeHtml(p.name)}" draggable="false" />
+          ${images.length > 1 ? `
+            <button type="button" class="product-gallery-nav product-gallery-prev" data-gallery-step="-1" aria-label="Previous product image">
+              <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="product-gallery-nav product-gallery-next" data-gallery-step="1" aria-label="Next product image">
+              <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+            </button>
+            <span class="product-gallery-counter" data-gallery-counter aria-live="polite">1 / ${images.length}</span>
             <div class="product-thumbnails" aria-label="Product images">
-              ${(p.images || [p.image]).map((image, index) => `
-                <button type="button" class="product-thumbnail ${index === 0 ? "active" : ""}" data-product-id="${p.id}" data-image-index="${index}" aria-label="View product image ${index + 1}" aria-pressed="${index === 0}">
-                  <img src="${escapeHtml(image)}" alt="" />
+              ${images.map((image, index) => `
+                <button type="button" class="product-thumbnail ${index === 0 ? "active" : ""}" data-product-id="${p.id}" data-gallery-index="${index}" aria-label="View product image ${index + 1}" aria-pressed="${index === 0}">
+                  <img src="${escapeHtml(image)}" alt="" loading="lazy" />
                 </button>
               `).join("")}
             </div>
@@ -282,20 +293,27 @@ async function checkDeliveryArea(event) {
 
 document.querySelectorAll("#product-grid-container, #home-product-grid").forEach(container => {
   container.addEventListener("click", event => {
-    const thumbnail = event.target.closest("[data-product-id][data-image-index]");
-    if (thumbnail) {
-      const product = products.find(item => item.id === Number(thumbnail.dataset.productId));
-      const image = product && (product.images || [product.image])[Number(thumbnail.dataset.imageIndex)];
-      if (image) {
-        thumbnail.closest(".product-gallery").querySelector(".product-img").src = image;
-        thumbnail.closest(".product-thumbnails").querySelectorAll(".product-thumbnail").forEach(button => {
-          const selected = button === thumbnail;
-          button.classList.toggle("active", selected);
-          button.setAttribute("aria-pressed", String(selected));
-        });
+    if (Date.now() < suppressProductGalleryClickUntil && event.target.closest("[data-product-gallery]")) {
+      suppressProductGalleryClickUntil = 0;
+      event.preventDefault();
+      return;
+    }
+
+    const galleryControl = event.target.closest("[data-gallery-step], [data-gallery-index]");
+    if (galleryControl) {
+      const gallery = galleryControl.closest("[data-product-gallery]");
+      const product = gallery && products.find(item => item.id === Number(gallery.dataset.productId));
+      if (gallery && product) {
+        const images = Array.isArray(product.images) && product.images.length ? product.images : [product.image];
+        const currentIndex = Number(gallery.querySelector(".product-img").dataset.galleryImageIndex || 0);
+        const nextIndex = galleryControl.hasAttribute("data-gallery-index")
+          ? Number(galleryControl.dataset.galleryIndex)
+          : currentIndex + Number(galleryControl.dataset.galleryStep);
+        showProductGalleryImage(gallery, images, nextIndex);
       }
       return;
     }
+
     const pill = event.target.closest("[data-product-id][data-variant]");
     if (pill) {
       selectVariant(Number(pill.dataset.productId), pill.dataset.variant);
@@ -306,6 +324,60 @@ document.querySelectorAll("#product-grid-container, #home-product-grid").forEach
     if (card) openProductDetails(Number(card.dataset.productId));
   });
 });
+
+document.addEventListener("pointerdown", event => {
+  const gallery = event.target.closest("[data-product-gallery]");
+  if (!gallery || !event.target.matches(".product-img, .product-detail-image") || event.pointerType === "mouse") return;
+  activeProductGallerySwipe = {
+    gallery,
+    pointerId: event.pointerId,
+    startX: event.clientX,
+    startY: event.clientY
+  };
+}, { passive: true });
+
+document.addEventListener("pointerup", event => {
+  const swipe = activeProductGallerySwipe;
+  activeProductGallerySwipe = null;
+  if (!swipe || swipe.pointerId !== event.pointerId) return;
+
+  const deltaX = event.clientX - swipe.startX;
+  const deltaY = event.clientY - swipe.startY;
+  if (Math.abs(deltaX) < PRODUCT_GALLERY_SWIPE_THRESHOLD
+    || Math.abs(deltaX) < Math.abs(deltaY) * 1.2) return;
+
+  const product = products.find(item => item.id === Number(swipe.gallery.dataset.productId));
+  const images = product && (Array.isArray(product.images) && product.images.length
+    ? product.images
+    : [product.image]);
+  if (!images || images.length < 2) return;
+
+  suppressProductGalleryClickUntil = Date.now() + 500;
+  const image = swipe.gallery.querySelector(".product-img, .product-detail-image");
+  const currentIndex = Number(image.dataset.galleryImageIndex || 0);
+  showProductGalleryImage(swipe.gallery, images, currentIndex + (deltaX < 0 ? 1 : -1));
+}, { passive: true });
+
+document.addEventListener("pointercancel", () => {
+  activeProductGallerySwipe = null;
+}, { passive: true });
+
+function showProductGalleryImage(gallery, images, requestedIndex) {
+  const index = (requestedIndex + images.length) % images.length;
+  const image = gallery.querySelector(".product-img, .product-detail-image");
+  image.src = images[index];
+  image.dataset.galleryImageIndex = String(index);
+
+  const counter = gallery.querySelector("[data-gallery-counter]");
+  if (counter) counter.textContent = `${index + 1} / ${images.length}`;
+
+  gallery.querySelectorAll("[data-gallery-index]").forEach(thumbnail => {
+    const active = Number(thumbnail.dataset.galleryIndex) === index;
+    thumbnail.classList.toggle("active", active);
+    thumbnail.setAttribute("aria-pressed", String(active));
+    if (active) thumbnail.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
+  });
+}
 
 function openProductDetails(productId, trigger = null) {
   const product = products.find(item => item.id === productId);
@@ -329,13 +401,22 @@ function openProductDetails(productId, trigger = null) {
   productDetailsTrigger = trigger || document.querySelector(`[data-product-detail-trigger="${productId}"]:not([hidden])`);
   
   modal.querySelector(".product-detail-content").innerHTML = `
-    <div class="product-detail-gallery">
-      <img class="product-detail-image" src="${escapeHtml(images[0])}" alt="${escapeHtml(product.name)}" />
-      ${images.length > 1 ? `<div class="product-thumbnails" aria-label="Product images">
-        ${images.map((image, index) => `<button type="button" class="product-thumbnail ${index === 0 ? "active" : ""}" data-detail-image-index="${index}" aria-label="View product image ${index + 1}" aria-pressed="${index === 0}">
+    <div class="product-detail-gallery" data-product-gallery data-product-id="${productId}">
+      <img class="product-detail-image" data-gallery-image-index="0" src="${escapeHtml(images[0])}" alt="${escapeHtml(product.name)}" draggable="false" />
+      ${images.length > 1 ? `
+        <button type="button" class="product-gallery-nav product-gallery-prev" data-gallery-step="-1" aria-label="Previous product image">
+          <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+        </button>
+        <button type="button" class="product-gallery-nav product-gallery-next" data-gallery-step="1" aria-label="Next product image">
+          <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+        </button>
+        <span class="product-gallery-counter" data-gallery-counter aria-live="polite">1 / ${images.length}</span>
+        <div class="product-thumbnails" aria-label="Product images">
+          ${images.map((image, index) => `<button type="button" class="product-thumbnail ${index === 0 ? "active" : ""}" data-gallery-index="${index}" aria-label="View product image ${index + 1}" aria-pressed="${index === 0}">
           <img src="${escapeHtml(image)}" alt="" />
-        </button>`).join("")}
-      </div>` : ""}
+          </button>`).join("")}
+        </div>
+      ` : ""}
     </div>
     <div class="product-detail-info">
       <span class="product-detail-category">${escapeHtml(product.category)}</span>
@@ -390,16 +471,14 @@ function openProductDetails(productId, trigger = null) {
   }
   
   detailContent.onclick = event => {
-    const thumbnail = event.target.closest("[data-detail-image-index]");
-    if (thumbnail) {
-      const image = images[Number(thumbnail.dataset.detailImageIndex)];
-      if (!image) return;
-      modal.querySelector(".product-detail-image").src = image;
-      modal.querySelectorAll("[data-detail-image-index]").forEach(button => {
-        const selected = button === thumbnail;
-        button.classList.toggle("active", selected);
-        button.setAttribute("aria-pressed", String(selected));
-      });
+    const galleryControl = event.target.closest("[data-gallery-step], [data-gallery-index]");
+    if (galleryControl) {
+      const gallery = galleryControl.closest("[data-product-gallery]");
+      const currentIndex = Number(gallery.querySelector(".product-detail-image").dataset.galleryImageIndex || 0);
+      const nextIndex = galleryControl.hasAttribute("data-gallery-index")
+        ? Number(galleryControl.dataset.galleryIndex)
+        : currentIndex + Number(galleryControl.dataset.galleryStep);
+      showProductGalleryImage(gallery, images, nextIndex);
       return;
     }
     if (event.target.closest(".review-signin-btn")) {
