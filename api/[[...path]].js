@@ -164,6 +164,58 @@ async function initializeDatabase() {
             AND data->>'image' = 'images/neem-combo.jpg'
             AND data->'images' = '["images/neem-combo.jpg"]'::jsonb`;
       }
+      const familyOralCareKitProduct = initialProducts.find(product => product.sku === "ZOHD-BTB-005");
+      if (familyOralCareKitProduct) {
+        await query`UPDATE products
+          SET data = jsonb_set(
+            jsonb_set(data, '{image}', to_jsonb(${familyOralCareKitProduct.image}::text)),
+            '{images}',
+            ${JSON.stringify(familyOralCareKitProduct.images)}::jsonb
+          )
+          WHERE id = ${familyOralCareKitProduct.id}
+            AND data->>'sku' = ${familyOralCareKitProduct.sku}
+            AND data->>'image' = 'images/products/zohd-oral-care-kit.png'
+            AND data->'images' = '["images/products/zohd-oral-care-kit.png"]'::jsonb`;
+      }
+      const adultOralCareKitProduct = initialProducts.find(product => product.sku === "ZOHD-BTB-006");
+      if (adultOralCareKitProduct) {
+        await query`UPDATE products
+          SET data = jsonb_set(
+            jsonb_set(data, '{image}', to_jsonb(${adultOralCareKitProduct.image}::text)),
+            '{images}',
+            ${JSON.stringify(adultOralCareKitProduct.images)}::jsonb
+          )
+          WHERE id = ${adultOralCareKitProduct.id}
+            AND data->>'sku' = ${adultOralCareKitProduct.sku}
+            AND data->>'image' = 'images/neem-combo.jpg'
+            AND data->'images' = '["images/neem-combo.jpg"]'::jsonb`;
+      }
+      const familyOralCareComboProduct = initialProducts.find(product => product.sku === "ZOHD-BTB-007");
+      if (familyOralCareComboProduct) {
+        await query`UPDATE products
+          SET data = jsonb_set(
+            jsonb_set(data, '{image}', to_jsonb(${familyOralCareComboProduct.image}::text)),
+            '{images}',
+            ${JSON.stringify(familyOralCareComboProduct.images)}::jsonb
+          )
+          WHERE id = ${familyOralCareComboProduct.id}
+            AND data->>'sku' = ${familyOralCareComboProduct.sku}
+            AND data->>'image' = 'images/products/zohd-oral-care-kit.png'
+            AND data->'images' = '["images/products/zohd-oral-care-kit.png"]'::jsonb`;
+      }
+      const adultOralCareComboProduct = initialProducts.find(product => product.sku === "ZOHD-BTB-008");
+      if (adultOralCareComboProduct) {
+        await query`UPDATE products
+          SET data = jsonb_set(
+            jsonb_set(data, '{image}', to_jsonb(${adultOralCareComboProduct.image}::text)),
+            '{images}',
+            ${JSON.stringify(adultOralCareComboProduct.images)}::jsonb
+          )
+          WHERE id = ${adultOralCareComboProduct.id}
+            AND data->>'sku' = ${adultOralCareComboProduct.sku}
+            AND data->>'image' = 'images/neem-combo.jpg'
+            AND data->'images' = '["images/neem-combo.jpg"]'::jsonb`;
+      }
       await query`SELECT setval(
         pg_get_serial_sequence('products', 'id'),
         GREATEST(COALESCE((SELECT MAX(id) FROM products), 0), 1),
