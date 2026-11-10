@@ -44,6 +44,84 @@ const FALLBACK_PRODUCTS = [
 let products = [];
 let cart = JSON.parse(localStorage.getItem("zohd_cart")) || [];
 let currentUser = JSON.parse(localStorage.getItem("zohd_user")) || null;
+let activeGallerySwipe = null;
+const PRODUCT_GALLERY_SWIPE_THRESHOLD = 45;
+
+document.addEventListener("click", event => {
+  const control = event.target.closest("[data-gallery-step], [data-gallery-index]");
+  if (!control) return;
+
+  const gallery = control.closest("[data-product-gallery]");
+  const product = gallery && products.find(item =>
+    String(item._id || item.id) === gallery.dataset.productId
+  );
+  const images = product && (Array.isArray(product.images) && product.images.length
+    ? product.images
+    : [product.image]);
+  if (!gallery || !images || images.length < 2) return;
+
+  const image = gallery.querySelector(".product-img");
+  const currentIndex = Number(image.dataset.galleryImageIndex || 0);
+  const requestedIndex = control.hasAttribute("data-gallery-index")
+    ? Number(control.dataset.galleryIndex)
+    : currentIndex + Number(control.dataset.galleryStep);
+  showProductGalleryImage(gallery, images, requestedIndex);
+});
+
+document.addEventListener("pointerdown", event => {
+  const gallery = event.target.closest("[data-product-gallery]");
+  if (!gallery || !event.target.closest(".product-img") || event.pointerType === "mouse") return;
+  activeGallerySwipe = {
+    gallery,
+    pointerId: event.pointerId,
+    startX: event.clientX,
+    startY: event.clientY
+  };
+}, { passive: true });
+
+document.addEventListener("pointerup", event => {
+  const swipe = activeGallerySwipe;
+  activeGallerySwipe = null;
+  if (!swipe || swipe.pointerId !== event.pointerId) return;
+
+  const deltaX = event.clientX - swipe.startX;
+  const deltaY = event.clientY - swipe.startY;
+  if (Math.abs(deltaX) < PRODUCT_GALLERY_SWIPE_THRESHOLD
+    || Math.abs(deltaX) < Math.abs(deltaY) * 1.2) return;
+
+  const product = products.find(item =>
+    String(item._id || item.id) === swipe.gallery.dataset.productId
+  );
+  const images = product && (Array.isArray(product.images) && product.images.length
+    ? product.images
+    : [product.image]);
+  if (!images || images.length < 2) return;
+
+  const image = swipe.gallery.querySelector(".product-img");
+  const currentIndex = Number(image.dataset.galleryImageIndex || 0);
+  showProductGalleryImage(swipe.gallery, images, currentIndex + (deltaX < 0 ? 1 : -1));
+}, { passive: true });
+
+document.addEventListener("pointercancel", () => {
+  activeGallerySwipe = null;
+}, { passive: true });
+
+function showProductGalleryImage(gallery, images, requestedIndex) {
+  const index = (requestedIndex + images.length) % images.length;
+  const image = gallery.querySelector(".product-img");
+  image.src = images[index];
+  image.dataset.galleryImageIndex = String(index);
+
+  const counter = gallery.querySelector("[data-gallery-counter]");
+  if (counter) counter.textContent = `${index + 1} / ${images.length}`;
+
+  gallery.querySelectorAll("[data-gallery-index]").forEach(thumbnail => {
+    const active = Number(thumbnail.dataset.galleryIndex) === index;
+    thumbnail.classList.toggle("active", active);
+    thumbnail.setAttribute("aria-pressed", String(active));
+    if (active) thumbnail.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
+  });
+}
 
 // INITIALIZATION
 document.addEventListener("DOMContentLoaded", () => {
@@ -160,9 +238,28 @@ function renderProducts() {
 
   container.innerHTML = products.map(p => {
     const productId = p._id || p.id;
+    const images = Array.isArray(p.images) && p.images.length ? p.images : [p.image];
     return `
     <div class="product-card">
-      <img src="${p.image}" class="product-img" alt="${p.name}" />
+      <div class="product-gallery" data-product-gallery data-product-id="${productId}">
+        <img src="${images[0]}" class="product-img" data-gallery-image-index="0" alt="${p.name}" draggable="false" />
+        ${images.length > 1 ? `
+          <button type="button" class="product-gallery-nav product-gallery-prev" data-gallery-step="-1" aria-label="Previous product image">
+            <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+          </button>
+          <button type="button" class="product-gallery-nav product-gallery-next" data-gallery-step="1" aria-label="Next product image">
+            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+          </button>
+          <span class="product-gallery-counter" data-gallery-counter aria-live="polite">1 / ${images.length}</span>
+          <div class="product-thumbnails" aria-label="Product images">
+            ${images.map((image, index) => `
+              <button type="button" class="product-thumbnail ${index === 0 ? "active" : ""}" data-gallery-index="${index}" aria-label="View product image ${index + 1}" aria-pressed="${index === 0}">
+                <img src="${image}" alt="" loading="lazy" />
+              </button>
+            `).join("")}
+          </div>
+        ` : ""}
+      </div>
       <div class="product-info">
         <div class="product-title">${p.name}</div>
         <div class="product-desc">${p.description}</div>
