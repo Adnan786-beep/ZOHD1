@@ -607,11 +607,30 @@ function openProductDetails(productId, trigger = null) {
   if (closeBtn) closeBtn.focus();
 }
 
+async function parseProductReviewResponse(response) {
+  const contentType = response.headers.get("content-type") || "";
+  if (!contentType.toLowerCase().includes("application/json")) {
+    const message = response.status === 404
+      ? "The reviews service could not be found (HTTP 404). Please refresh and try again."
+      : `The reviews service returned an unexpected response (HTTP ${response.status}).`;
+    throw new Error(message);
+  }
+
+  try {
+    return await response.json();
+  } catch {
+    throw new Error(`The reviews service returned invalid JSON (HTTP ${response.status}).`);
+  }
+}
+
 async function loadProductReviews(productId, detailContent) {
   try {
     const response = await fetch(`/api/products/${productId}/reviews`);
-    const result = await response.json();
+    const result = await parseProductReviewResponse(response);
     if (!response.ok) throw new Error(result.error || `Unable to load reviews (HTTP ${response.status}).`);
+    if (!result || !Array.isArray(result.reviews) || typeof result.count !== "number") {
+      throw new Error("The reviews response is invalid. Please refresh and try again.");
+    }
     const reviewsSection = detailContent.querySelector(".product-reviews");
     if (!reviewsSection || Number(reviewsSection.dataset.reviewProductId) !== productId) return;
     const summary = reviewsSection.querySelector(".product-review-summary");
@@ -655,17 +674,22 @@ async function submitProductReview(event, productId) {
         text: form.elements.text.value
       })
     });
-    const result = await response.json();
-    if (!response.ok)     if (response.status === 401) {
-      currentUser = null;
-      const displayName = document.getElementById("user-display-name");
-      if (displayName) displayName.textContent = "Login / Register";
-      closeProductDetails();
-      openAuthModal();
-      const loginError = document.getElementById("customer-login-error");
-      if (loginError) loginError.textContent = result.error || "Please sign in again to submit your review.";
+    const result = await parseProductReviewResponse(response);
+    if (!response.ok) {
+      if (response.status === 401) {
+        currentUser = null;
+        const displayName = document.getElementById("user-display-name");
+        if (displayName) displayName.textContent = "Login / Register";
+        closeProductDetails();
+        openAuthModal();
+        const loginError = document.getElementById("customer-login-error");
+        if (loginError) loginError.textContent = result.error || "Please sign in again to submit your review.";
+      }
+      throw new Error(result.error || `Unable to submit review (HTTP ${response.status}).`);
     }
-    throw new Error(result.error || `Unable to submit review (HTTP ${response.status}).`);
+    if (!result || !result.review) {
+      throw new Error("The review response is invalid. Please refresh and try again.");
+    }
     form.reset();
     status.textContent = "Thanks! Your review is waiting for approval.";
   } catch (error) {
