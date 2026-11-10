@@ -24,7 +24,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   </noscript>
 
-  <link rel="stylesheet" href="css/index.css?v=gallery-swipe-20261110" />
+  <link rel="stylesheet" href="css/index.css?v=featured-carousel-20261110" />
 </head>
 <body>
   <div id="page-loader" class="page-loader" aria-live="polite" aria-label="Loading website">
@@ -81,11 +81,23 @@
           <button class="btn btn-outline" onclick="showSection('about-section')">Get to know ZOHD</button>
         </div>
       </div>
-      <div class="hero-product">
-        <span class="hero-product-note"><i class="fa-solid fa-house"></i> The family combo</span>
-        <!-- Added fetchpriority for immediate loading of LCP image -->
-        <img src="images/products/family-bamboo-toothbrush-lifestyle.png" alt="ZOHD Family Bamboo Toothbrush Combo with two adult and two kids toothbrushes" fetchpriority="high" />
-        <span class="hero-product-price">Family pack <strong>₹183</strong> <del>₹288</del></span>
+      <div class="hero-product" id="featured-product-carousel" role="region" aria-roledescription="carousel" aria-label="Featured products">
+        <span class="hero-product-note" data-featured-label><i class="fa-solid fa-sparkles" aria-hidden="true"></i> Featured product</span>
+        <img data-featured-image src="images/products/family-oral-care-kit-main.png" alt="ZOHD Family Oral Care Kit" fetchpriority="high" />
+        <div class="hero-product-footer">
+          <div class="hero-product-price" data-featured-price aria-live="polite">
+            <span>Family oral care kit</span><strong>₹261</strong><del>₹458</del>
+          </div>
+          <div class="hero-carousel-controls">
+            <button type="button" class="hero-carousel-arrow" data-carousel-step="-1" aria-label="Previous featured product">
+              <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+            </button>
+            <div class="hero-carousel-dots" data-carousel-dots role="group" aria-label="Choose a featured product"></div>
+            <button type="button" class="hero-carousel-arrow" data-carousel-step="1" aria-label="Next featured product">
+              <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -449,6 +461,6 @@
     </div>
   </footer>
 
-  <script src="js/index.js?v=gallery-swipe-20261110" defer></script>
+  <script src="js/index.js?v=featured-carousel-20261110" defer></script>
 </body>
 </html>

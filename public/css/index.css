@@ -321,7 +321,7 @@
       max-width: 460px;
       justify-self: center;
       width: 100%;
-      padding: 1rem;
+      padding: 1rem 1rem 0.75rem;
       border: 1px solid rgba(255, 255, 255, 0.75);
       border-radius: calc(var(--radius) + 8px);
       background: rgba(255, 255, 255, 0.86);
@@ -335,6 +335,9 @@
       object-fit: contain;
       border-radius: var(--radius);
       background: #f8f7f3;
+      touch-action: pan-y;
+      user-select: none;
+      -webkit-user-drag: none;
     }
 
     .hero-product-note {
@@ -356,23 +359,95 @@
     }
 
     .hero-product-price {
-      display: flex;
-      align-items: baseline;
-      gap: 0.5rem;
-      padding: 0.9rem 0.35rem 0.15rem;
+      display: grid;
+      gap: 0.12rem;
+      min-width: 0;
+      padding: 0.2rem 0.35rem;
       color: var(--text-light);
       font-size: 0.9rem;
       font-weight: 600;
     }
 
+    .hero-product-price span {
+      display: -webkit-box;
+      overflow: hidden;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 1;
+      color: var(--text-dark);
+      font-size: 0.83rem;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+
     .hero-product-price strong {
       color: var(--primary-green);
-      font-size: 1.2rem;
+      font-size: 1.08rem;
     }
 
     .hero-product-price del {
       color: #858b85;
       font-weight: 400;
+    }
+
+    .hero-product-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding-top: 0.55rem;
+    }
+
+    .hero-carousel-controls {
+      display: flex;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .hero-carousel-arrow {
+      display: grid;
+      width: 2rem;
+      height: 2rem;
+      padding: 0;
+      place-items: center;
+      border: 1px solid rgba(28, 59, 43, 0.15);
+      border-radius: 50%;
+      background: var(--white);
+      color: var(--primary-green);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .hero-carousel-arrow:hover {
+      border-color: var(--primary-green);
+      background: var(--primary-green);
+      color: var(--white);
+    }
+
+    .hero-carousel-arrow i {
+      font-size: 0.72rem;
+    }
+
+    .hero-carousel-dots {
+      display: flex;
+      align-items: center;
+      gap: 0.32rem;
+    }
+
+    .hero-carousel-dot {
+      width: 0.42rem;
+      height: 0.42rem;
+      padding: 0;
+      border: 0;
+      border-radius: 999px;
+      background: #c9cfc8;
+      cursor: pointer;
+      transition: width 0.2s ease, background-color 0.2s ease;
+    }
+
+    .hero-carousel-dot[aria-pressed="true"] {
+      width: 1.05rem;
+      background: var(--primary-green);
     }
 
     .home-benefits {
@@ -1282,6 +1357,15 @@
 
       .hero-product {
         max-width: 360px;
+      }
+
+      .hero-product img {
+        height: clamp(230px, 68vw, 320px);
+      }
+
+      .hero-carousel-arrow {
+        width: 1.75rem;
+        height: 1.75rem;
       }
 
       .home-collection-heading,

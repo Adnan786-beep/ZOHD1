@@ -8,6 +8,9 @@ let productSearchQuery = "";
 let activeProductGallerySwipe = null;
 let suppressProductGalleryClickUntil = 0;
 const PRODUCT_GALLERY_SWIPE_THRESHOLD = 45;
+const FEATURED_PRODUCT_SKUS = ["ZOHD-BTB-005", "ZOHD-BTB-001", "ZOHD-BTB-007", "ZOHD-BTB-008"];
+let featuredProductIndex = 0;
+let featuredProducts = [];
 
 document.addEventListener("DOMContentLoaded", () => {
   loadProducts();
@@ -72,6 +75,7 @@ async function loadProducts() {
         selectedVariant: product.variants ? product.variants[0] : ""
       };
     });
+    initializeFeaturedCarousel();
 
     cart = savedCart.flatMap(item => {
       const product = products.find(entry =>
@@ -91,6 +95,82 @@ async function loadProducts() {
       productContainer.innerHTML = `<p class="catalog-message" role="alert">${escapeHtml(error.message)} Please refresh the page or try again later.</p>`;
     });
   }
+}
+
+function initializeFeaturedCarousel() {
+  const carousel = document.getElementById("featured-product-carousel");
+  if (!carousel) return;
+
+  featuredProducts = FEATURED_PRODUCT_SKUS
+    .map(sku => products.find(product => product.sku === sku))
+    .filter(product => product && (product.images?.[0] || product.image));
+  if (!featuredProducts.length) {
+    carousel.hidden = true;
+    return;
+  }
+
+  const dots = carousel.querySelector("[data-carousel-dots]");
+  dots.innerHTML = featuredProducts.map((product, index) => `
+    <button type="button" class="hero-carousel-dot" data-carousel-index="${index}"
+      aria-label="Show ${escapeHtml(product.name)}" aria-pressed="${index === 0}">
+    </button>
+  `).join("");
+  carousel.addEventListener("click", event => {
+    const control = event.target.closest("[data-carousel-step], [data-carousel-index]");
+    if (!control) return;
+    const index = control.hasAttribute("data-carousel-index")
+      ? Number(control.dataset.carouselIndex)
+      : featuredProductIndex + Number(control.dataset.carouselStep);
+    showFeaturedProduct(index);
+  });
+  carousel.addEventListener("keydown", handleFeaturedCarouselKeydown);
+  let swipeStart = null;
+  const featuredImage = carousel.querySelector("[data-featured-image]");
+  featuredImage.addEventListener("pointerdown", event => {
+    if (event.pointerType === "mouse") return;
+    swipeStart = { pointerId: event.pointerId, x: event.clientX, y: event.clientY };
+  }, { passive: true });
+  featuredImage.addEventListener("pointerup", event => {
+    if (!swipeStart || swipeStart.pointerId !== event.pointerId) return;
+    const deltaX = event.clientX - swipeStart.x;
+    const deltaY = event.clientY - swipeStart.y;
+    swipeStart = null;
+    if (Math.abs(deltaX) < PRODUCT_GALLERY_SWIPE_THRESHOLD || Math.abs(deltaX) < Math.abs(deltaY) * 1.2) return;
+    showFeaturedProduct(featuredProductIndex + (deltaX < 0 ? 1 : -1));
+  }, { passive: true });
+  featuredImage.addEventListener("pointercancel", () => {
+    swipeStart = null;
+  }, { passive: true });
+  showFeaturedProduct(0);
+}
+
+function showFeaturedProduct(requestedIndex) {
+  if (!featuredProducts.length) return;
+  featuredProductIndex = (requestedIndex + featuredProducts.length) % featuredProducts.length;
+  const product = featuredProducts[featuredProductIndex];
+  const carousel = document.getElementById("featured-product-carousel");
+  const image = carousel.querySelector("[data-featured-image]");
+  const productImages = Array.isArray(product.images) && product.images.length
+    ? product.images
+    : [product.image];
+  image.src = productImages[0];
+  image.alt = product.name;
+  carousel.querySelector("[data-featured-label]").innerHTML =
+    `<i class="fa-solid fa-sparkles" aria-hidden="true"></i> ${escapeHtml(product.category || "Featured product")}`;
+  carousel.querySelector("[data-featured-price]").innerHTML = `
+    <span>${escapeHtml(product.name)}</span><strong>₹${product.price}</strong>
+    ${product.mrp > product.price ? `<del>₹${product.mrp}</del>` : ""}
+  `;
+  carousel.querySelectorAll("[data-carousel-index]").forEach((dot, index) => {
+    dot.setAttribute("aria-pressed", String(index === featuredProductIndex));
+  });
+}
+
+function handleFeaturedCarouselKeydown(event) {
+  if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+  if (event.target.closest("button")) return;
+  event.preventDefault();
+  showFeaturedProduct(featuredProductIndex + (event.key === "ArrowRight" ? 1 : -1));
 }
 
 function showSection(sectionId) {
