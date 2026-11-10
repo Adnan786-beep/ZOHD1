@@ -2,10 +2,7 @@
    ZOHD - HOUSE OF SUSTAINABLES (FRONTEND CONTROLLER)
    ========================================================================== */
 
-// BACKEND API BASE URL (Adjust port if your Node.js server runs on another port)
-const API_BASE_URL = window.location.origin.includes('localhost') 
-  ? 'http://localhost:5000' 
-  : '';
+const API_BASE_URL = '';
 
 // LOCAL FALLBACK CATALOG (Used if Node.js server is offline or endpoints return HTML)
 const FALLBACK_PRODUCTS = [
@@ -143,27 +140,43 @@ document.addEventListener("DOMContentLoaded", () => {
 async function loadProducts() {
   try {
     const response = await fetch(`${API_BASE_URL}/api/products`);
-
-    // Check if response is valid JSON and not an HTML error page
     if (!response.ok) {
-      console.warn(`Server returned status ${response.status}. Using fallback products.`);
-      products = FALLBACK_PRODUCTS;
-    } else {
-      const contentType = response.headers.get("content-type");
-      if (contentType && contentType.includes("application/json")) {
-        const data = await response.json();
-        products = data.map(p => ({
-          ...p,
-          selectedVariant: p.variants && p.variants.length > 0 ? p.variants[0] : "Standard"
-        }));
-      } else {
-        console.warn("Server returned non-JSON response. Using fallback products.");
-        products = FALLBACK_PRODUCTS;
-      }
+      throw new Error(`Product API returned HTTP ${response.status}.`);
     }
+
+    const data = await response.json();
+    if (!Array.isArray(data)) {
+      throw new Error("Product API returned an invalid catalog.");
+    }
+
+    products = data.map(product => ({
+      ...product,
+      selectedVariant: product.variants && product.variants.length > 0 ? product.variants[0] : "Standard"
+    }));
   } catch (error) {
-    console.error("Fetch error for products:", error);
-    products = FALLBACK_PRODUCTS;
+    console.warn("Unable to load products from the API; trying the published catalog.", error);
+    try {
+      const response = await fetch("/data/products.json");
+      if (!response.ok) {
+        throw new Error(`Published product catalog returned HTTP ${response.status}.`);
+      }
+
+      const catalog = await response.json();
+      if (!Array.isArray(catalog)) {
+        throw new Error("Published product catalog is not an array.");
+      }
+
+      products = catalog.map(product => ({
+        ...product,
+        selectedVariant: product.variants && product.variants.length > 0 ? product.variants[0] : "Standard"
+      }));
+    } catch (catalogError) {
+      console.error("Unable to load products from either the API or published catalog.", {
+        apiError: error,
+        catalogError
+      });
+      products = FALLBACK_PRODUCTS;
+    }
   }
 
   const savedCart = Array.isArray(cart) ? cart : [];
