@@ -20,16 +20,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function loadProducts() {
   try {
-    let response = await fetch("/api/products");
-    if (response.status === 404) {
-      console.warn("Product API route is unavailable; loading the published catalog instead.");
-      response = await fetch("data/products.json");
+    let catalog;
+    try {
+      const response = await fetch("/api/products");
+      if (response.ok) {
+        const apiCatalog = await response.json();
+        if (Array.isArray(apiCatalog)) {
+          catalog = apiCatalog;
+        } else {
+          console.warn("Product API returned an invalid catalog; loading the published catalog instead.");
+        }
+      } else {
+        console.warn(`Product API returned status ${response.status}; loading the published catalog instead.`);
+      }
+    } catch (error) {
+      console.warn("Product API is unavailable; loading the published catalog instead.", error);
     }
-    if (!response.ok) {
-      throw new Error(`Unable to load product catalog (HTTP ${response.status}).`);
+
+    if (!Array.isArray(catalog)) {
+      const response = await fetch("/data/products.json");
+      if (!response.ok) {
+        throw new Error(`Unable to load published product catalog (HTTP ${response.status}).`);
+      }
+      catalog = await response.json();
     }
-    const catalog = await response.json();
-    if (!Array.isArray(catalog)) throw new Error("The product catalog response is invalid.");
+
+    if (!Array.isArray(catalog)) throw new Error("The published product catalog response is invalid.");
     
     const uniqueCatalog = new Map();
     catalog.forEach(product => {
