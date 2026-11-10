@@ -13,10 +13,6 @@ const FEATURED_PRODUCT_INTERVAL_MS = 5000;
 let featuredProductIndex = 0;
 let featuredProducts = [];
 let featuredProductTimer = null;
-let featuredProductPaused = window.matchMedia
-  ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  : false;
-let featuredProductHovered = false;
 
 document.addEventListener("DOMContentLoaded", () => {
   loadProducts();
@@ -122,14 +118,6 @@ function initializeFeaturedCarousel() {
     </button>
   `).join("");
   carousel.addEventListener("click", event => {
-    const toggle = event.target.closest("[data-carousel-toggle]");
-    if (toggle) {
-      featuredProductPaused = !featuredProductPaused;
-      updateFeaturedCarouselToggle(carousel);
-      scheduleFeaturedProductAutoplay();
-      return;
-    }
-
     const control = event.target.closest("[data-carousel-step], [data-carousel-index]");
     if (!control) return;
     const index = control.hasAttribute("data-carousel-index")
@@ -139,18 +127,6 @@ function initializeFeaturedCarousel() {
     scheduleFeaturedProductAutoplay();
   });
   carousel.addEventListener("keydown", handleFeaturedCarouselKeydown);
-  carousel.addEventListener("mouseenter", () => {
-    featuredProductHovered = true;
-    scheduleFeaturedProductAutoplay();
-  });
-  carousel.addEventListener("mouseleave", () => {
-    featuredProductHovered = false;
-    scheduleFeaturedProductAutoplay();
-  });
-  carousel.addEventListener("focusin", scheduleFeaturedProductAutoplay);
-  carousel.addEventListener("focusout", event => {
-    if (!carousel.contains(event.relatedTarget)) scheduleFeaturedProductAutoplay();
-  });
   document.addEventListener("visibilitychange", scheduleFeaturedProductAutoplay);
   let swipeStart = null;
   const featuredImage = carousel.querySelector("[data-featured-image]");
@@ -171,7 +147,6 @@ function initializeFeaturedCarousel() {
     swipeStart = null;
   }, { passive: true });
   showFeaturedProduct(0);
-  updateFeaturedCarouselToggle(carousel);
   scheduleFeaturedProductAutoplay();
 }
 
@@ -181,23 +156,11 @@ function scheduleFeaturedProductAutoplay() {
     featuredProductTimer = null;
   }
   const carousel = document.getElementById("featured-product-carousel");
-  if (!carousel || featuredProductPaused || featuredProductHovered
-    || document.hidden || !featuredProducts.length) return;
-  if (carousel.contains(document.activeElement)) return;
+  if (!carousel || document.hidden || !featuredProducts.length) return;
 
   featuredProductTimer = setInterval(() => {
     showFeaturedProduct(featuredProductIndex + 1);
   }, FEATURED_PRODUCT_INTERVAL_MS);
-}
-
-function updateFeaturedCarouselToggle(carousel) {
-  const toggle = carousel.querySelector("[data-carousel-toggle]");
-  if (!toggle) return;
-  toggle.setAttribute(
-    "aria-label",
-    featuredProductPaused ? "Start automatic slide show" : "Pause automatic slide show"
-  );
-  toggle.innerHTML = `<i class="fa-solid ${featuredProductPaused ? "fa-play" : "fa-pause"}" aria-hidden="true"></i>`;
 }
 
 function showFeaturedProduct(requestedIndex) {
