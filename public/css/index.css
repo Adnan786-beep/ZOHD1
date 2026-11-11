@@ -2110,7 +2110,7 @@
     }
 
     .guest-divider-wrapper {
-      margin-top: 0.35rem;
+      margin-top: 0.2rem;
       text-align: center;
     }
 
@@ -2143,28 +2143,7 @@
     }
 
     .divider-line {
-      position: relative;
-      text-align: center;
-      margin: 1rem 0 0.6rem;
-    }
-
-    .divider-line::before {
-      content: "";
-      position: absolute;
-      top: 50%;
-      left: 0;
-      width: 100%;
-      height: 1px;
-      background: var(--border-color);
-    }
-
-    .divider-line span {
-      position: relative;
-      background: var(--white);
-      padding: 0 1rem;
-      color: var(--text-light);
-      font-size: 0.8rem;
-      font-weight: 700;
+      display: none;
     }
 
     .guest-helper {
