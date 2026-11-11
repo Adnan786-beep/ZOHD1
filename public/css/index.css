@@ -81,6 +81,7 @@
       justify-content: space-between;
       align-items: center;
       gap: 1rem;
+      min-height: 52px;
     }
 
     .brand-logo {
@@ -95,7 +96,7 @@
 
     .brand-logo-image {
       display: block;
-      width: clamp(42px, 4vw, 54px);
+      width: clamp(52px, 5vw, 70px);
       height: auto;
       filter: drop-shadow(0 4px 10px rgba(28, 59, 43, 0.08));
     }
@@ -103,7 +104,7 @@
     .brand-logo-text {
       color: #49321f;
       font-family: 'Cinzel', serif;
-      font-size: clamp(1rem, 1.4vw, 1.35rem);
+      font-size: clamp(1.1rem, 1.7vw, 1.6rem);
       font-weight: 700;
       letter-spacing: 0.18em;
       line-height: 1;
