@@ -112,11 +112,55 @@
       white-space: nowrap;
     }
 
+    .nav-links {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(1rem, 2vw, 2rem);
+      margin: 0 auto;
+      flex: 1;
+    }
+
+    .nav-links a {
+      position: relative;
+      color: var(--text-dark);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      opacity: 0.78;
+      transition: var(--transition);
+      cursor: pointer;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      opacity: 1;
+      color: var(--primary-green);
+    }
+
+    .nav-links a::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -8px;
+      width: 0;
+      height: 2px;
+      border-radius: 99px;
+      background: var(--primary-green);
+      transition: var(--transition);
+    }
+
+    .nav-links a:hover::after,
+    .nav-links a.active::after {
+      width: 100%;
+    }
+
     .nav-actions {
       display: flex;
       gap: 0.7rem;
       align-items: center;
-      margin-left: auto;
     }
 
     .icon-btn {
