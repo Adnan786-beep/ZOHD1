@@ -66,12 +66,11 @@
     .navbar {
       position: sticky;
       top: 0;
-      background: rgba(255, 255, 255, 0.94);
-      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.97);
+      backdrop-filter: blur(8px);
       border-bottom: 1px solid rgba(28, 59, 43, 0.08);
-      box-shadow: 0 6px 16px rgba(28, 59, 43, 0.04);
       z-index: 1000;
-      padding: 0.9rem 0;
+      padding: 0.7rem 0;
     }
 
     .nav-container {
@@ -85,53 +84,55 @@
     }
 
     .brand-logo {
-      text-decoration: none;
       display: flex;
       align-items: center;
-      justify-content: center;
+      gap: 0.2rem;
+      text-decoration: none;
       cursor: pointer;
       min-width: 0;
+      flex-shrink: 0;
     }
 
     .brand-logo-image {
       display: block;
-      width: clamp(52px, 5vw, 64px);
+      width: clamp(42px, 4vw, 54px);
       height: auto;
-      filter: drop-shadow(0 8px 18px rgba(28, 59, 43, 0.08));
+      filter: drop-shadow(0 4px 10px rgba(28, 59, 43, 0.08));
     }
 
     .brand-logo-text {
-      margin-left: -10px;
-      transform: translateY(2px);
       color: #49321f;
       font-family: 'Cinzel', serif;
-      font-size: clamp(1.15rem, 1.5vw, 1.45rem);
+      font-size: clamp(1rem, 1.4vw, 1.35rem);
       font-weight: 700;
-      letter-spacing: 0.14em;
+      letter-spacing: 0.18em;
       line-height: 1;
       white-space: nowrap;
+      transform: none;
+      margin-left: 0;
     }
 
     .nav-links {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: clamp(1rem, 2vw, 2rem);
-      margin: 0 auto;
+      gap: 1.3rem;
       flex: 1;
+      margin: 0 auto;
     }
 
     .nav-links a {
       position: relative;
       color: var(--text-dark);
+      opacity: 0.7;
       text-decoration: none;
-      font-size: 0.82rem;
+      font-size: 0.7rem;
       font-weight: 700;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
-      opacity: 0.78;
       transition: var(--transition);
       cursor: pointer;
+      white-space: nowrap;
     }
 
     .nav-links a:hover,
@@ -144,10 +145,9 @@
       content: "";
       position: absolute;
       left: 0;
-      bottom: -8px;
+      bottom: -7px;
       width: 0;
-      height: 2px;
-      border-radius: 99px;
+      height: 1.5px;
       background: var(--primary-green);
       transition: var(--transition);
     }
@@ -159,31 +159,29 @@
 
     .nav-actions {
       display: flex;
-      gap: 0.7rem;
       align-items: center;
+      gap: 0.6rem;
+      flex-shrink: 0;
     }
 
     .icon-btn {
-      background: var(--white);
-      border: 1px solid rgba(28, 59, 43, 0.08);
-      padding: 0.7rem 0.9rem;
-      border-radius: 999px;
-      cursor: pointer;
-      display: flex;
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      border-radius: 50%;
+      background: transparent;
+      border: 1px solid rgba(28, 59, 43, 0.12);
+      color: var(--primary-green);
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
-      font-weight: 600;
-      font-size: 0.82rem;
+      cursor: pointer;
       transition: var(--transition);
-      box-shadow: 0 4px 10px rgba(28, 59, 43, 0.03);
-      min-width: 42px;
-      min-height: 42px;
+      box-shadow: none;
     }
 
     .icon-btn:hover {
       background: var(--accent-beige);
-      border-color: rgba(28, 59, 43, 0.12);
       transform: translateY(-1px);
     }
 
@@ -191,7 +189,7 @@
       background: var(--primary-green);
       color: var(--white);
       border: none;
-      padding-inline: 0.9rem;
+      position: relative;
     }
 
     .cart-btn:hover {
@@ -199,13 +197,16 @@
     }
 
     .cart-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
       background: var(--accent-gold);
       color: var(--white);
-      font-size: 0.72rem;
+      font-size: 0.65rem;
       font-weight: 800;
       border-radius: 50%;
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
       display: flex;
       align-items: center;
       justify-content: center;
