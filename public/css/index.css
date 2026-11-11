@@ -112,50 +112,11 @@
       white-space: nowrap;
     }
 
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: clamp(1rem, 2vw, 2rem);
-    }
-
-    .nav-links a {
-      text-decoration: none;
-      color: var(--text-dark);
-      font-weight: 600;
-      font-size: 0.88rem;
-      letter-spacing: 0.01em;
-      transition: var(--transition);
-      cursor: pointer;
-      position: relative;
-      opacity: 0.8;
-    }
-
-    .nav-links a:hover,
-    .nav-links a.active {
-      opacity: 1;
-      color: var(--primary-green);
-    }
-
-    .nav-links a::after {
-      content: '';
-      position: absolute;
-      bottom: -8px;
-      left: 0;
-      width: 0%;
-      height: 2px;
-      background: var(--primary-green);
-      transition: var(--transition);
-      border-radius: 99px;
-    }
-
-    .nav-links a:hover::after, .nav-links a.active::after {
-      width: 100%;
-    }
-
     .nav-actions {
       display: flex;
       gap: 0.7rem;
       align-items: center;
+      margin-left: auto;
     }
 
     .icon-btn {
