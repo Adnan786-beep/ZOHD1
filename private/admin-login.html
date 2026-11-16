@@ -4,46 +4,159 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Login | ZOHD</title>
+  <link rel="icon" type="image/png" href="/images/zohd-mark.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       font-family: "Plus Jakarta Sans", sans-serif;
       color: #1e2421;
       background: #fcfbfa;
-      --green: #1c3b2b;
-      --border: #e5dec9;
+      --primary-green: #1c3b2b;
+      --primary-light: #2c5942;
+      --accent-beige: #f5f0eb;
+      --accent-gold: #9a7448;
+      --text-light: #626d66;
+      --border-color: #e5dec9;
+      --radius: 14px;
+      --shadow: 0 15px 35px rgba(28, 59, 43, 0.1);
     }
 
     * { box-sizing: border-box; }
-    body { min-height: 100vh; margin: 0; display: grid; place-items: center; padding: 1.5rem; }
-    main { width: min(100%, 430px); padding: 2.5rem; border: 1px solid var(--border); border-radius: 16px; background: white; box-shadow: 0 15px 35px rgba(28, 59, 43, 0.1); }
-    h1 { margin: 0 0 0.5rem; color: var(--green); font-size: 1.7rem; }
-    p { margin: 0 0 1.5rem; color: #626d66; }
-    label { display: block; margin: 1rem 0 0.4rem; font-weight: 700; font-size: 0.9rem; }
-    input { width: 100%; padding: 0.85rem; border: 1px solid var(--border); border-radius: 10px; font: inherit; }
-    input:focus { outline: 2px solid rgba(28, 59, 43, 0.25); border-color: var(--green); }
-    button { width: 100%; margin-top: 1rem; padding: 0.9rem; border: 0; border-radius: 30px; background: var(--green); color: white; font: inherit; font-weight: 700; cursor: pointer; }
-    button:disabled { opacity: 0.7; cursor: wait; }
-    #login-error { margin-top: 0.35rem; color: #b42318; font-size: 0.9rem; }
-    a { color: var(--green); }
-    main > a { display: inline-block; margin-top: 0.5rem; }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 2rem;
+      background:
+        radial-gradient(ellipse at 10% 0, rgba(154, 116, 72, 0.08), transparent 30rem),
+        linear-gradient(180deg, var(--accent-beige) 0, #fcfbfa 22rem);
+    }
+
+    :focus-visible { outline: 3px solid var(--accent-gold); outline-offset: 3px; }
+    .login-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(390px, 0.95fr);
+      width: min(100%, 1040px);
+      min-height: 620px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      background: white;
+      box-shadow: var(--shadow);
+    }
+
+    .login-story {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 100%;
+      padding: clamp(2rem, 4vw, 3.5rem);
+      color: white;
+      background:
+        linear-gradient(180deg, rgba(20, 42, 30, 0.08) 8%, rgba(20, 42, 30, 0.86) 100%),
+        url("/images/products/family-bamboo-toothbrush-pack-lifestyle.png") center / cover;
+    }
+
+    .story-kicker,
+    .story-note {
+      width: fit-content;
+      padding: 0.55rem 0.85rem;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 30px;
+      background: rgba(28, 59, 43, 0.3);
+      color: white;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .story-copy { max-width: 430px; margin: auto 0; padding: 3rem 0; }
+    .story-copy h2 { margin: 0 0 0.9rem; font-family: "Cinzel", serif; font-size: clamp(2rem, 3.5vw, 3rem); font-weight: 600; line-height: 1.2; }
+    .story-copy p { margin: 0; color: rgba(255, 255, 255, 0.88); line-height: 1.7; }
+
+    .login-form-panel {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: clamp(2rem, 5vw, 4rem);
+    }
+
+    .brand-logo { display: inline-flex; align-items: center; gap: 0.2rem; width: fit-content; margin-bottom: 2rem; text-decoration: none; }
+    .brand-logo img { display: block; width: 76px; height: auto; }
+    .brand-logo span { color: #49321f; font-family: "Cinzel", serif; font-size: 1.3rem; font-weight: 700; letter-spacing: 0.18em; line-height: 1; }
+    .form-kicker { margin: 0 0 0.5rem; color: var(--accent-gold); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; }
+    h1 { margin: 0 0 0.5rem; color: var(--primary-green); font-family: "Cinzel", serif; font-size: 1.9rem; font-weight: 600; }
+    .form-intro { margin: 0 0 1.5rem; color: var(--text-light); line-height: 1.6; }
+    #admin-login-form { display: grid; gap: 0.9rem; width: min(100%, 320px); }
+    .form-field { display: grid; gap: 0.45rem; }
+    label { display: block; margin: 0; color: #2b2d42; font-weight: 700; font-size: 0.88rem; }
+    input { width: 100%; height: 50px; padding: 0 1rem; border: 1px solid var(--border-color); border-radius: 10px; background: #fff; color: #1e2421; font: inherit; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+    input:focus { outline: 3px solid rgba(154, 116, 72, 0.2); border-color: var(--accent-gold); }
+    button { width: 100%; margin-top: 0.15rem; padding: 0.75rem 1.25rem; border: 0; border-radius: 30px; background: var(--primary-green); color: white; font: inherit; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: background-color 0.24s ease, transform 0.24s ease; }
+    button:hover { background: var(--primary-light); transform: translateY(-1px); }
+    button:disabled { opacity: 0.7; cursor: wait; transform: none; }
+    #login-error { min-height: 1.35rem; margin: 0; color: #b42318; font-size: 0.9rem; }
+    #login-error:empty { display: none; }
+    .store-link { display: inline-flex; align-items: center; justify-content: center; width: fit-content; margin-top: 1rem; padding: 0.65rem 1rem; border: 1px solid var(--border-color); border-radius: 30px; color: var(--text-light); text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: border-color 0.24s ease, color 0.24s ease, background-color 0.24s ease; }
+    .store-link:hover { border-color: var(--primary-green); background: var(--accent-beige); color: var(--primary-green); }
+
+    @media (max-width: 760px) {
+      body { padding: 1rem; }
+      .login-card { grid-template-columns: 1fr; min-height: 0; }
+      .login-story { min-height: 250px; padding: 1.5rem; }
+      .story-copy { max-width: 460px; padding: 1.5rem 0; }
+      .story-copy h2 { font-size: 2rem; }
+      .story-note { display: none; }
+      .login-form-panel { padding: 2rem; }
+      .brand-logo { margin-bottom: 1.5rem; }
+    }
+
+    @media (max-width: 480px) {
+      body { padding: 0; }
+      .login-card { min-height: 100vh; border: 0; border-radius: 0; }
+      .login-story { min-height: 190px; padding: 1.25rem 1.5rem; }
+      .story-copy { padding: 1rem 0; }
+      .story-copy h2 { font-size: 1.65rem; }
+      .login-form-panel { justify-content: flex-start; padding: 1.5rem; }
+    }
   </style>
 </head>
 <body>
-  <main>
-    <h1>Admin sign in</h1>
-    <p>Sign in with your administrator credentials to continue.</p>
-    <form id="admin-login-form">
-      <label for="admin-id">Admin ID</label>
-      <input id="admin-id" name="adminId" autocomplete="username" required />
-      <label for="admin-password">Password</label>
-      <input id="admin-password" name="password" type="password" autocomplete="current-password" required />
-      <button id="submit-button" type="submit">Sign in</button>
-      <div id="login-error" role="alert" aria-live="polite"></div>
-    </form>
-    <a href="/index.html">Back to store</a>
+  <main class="login-card">
+    <section class="login-story" aria-label="ZOHD brand">
+      <span class="story-kicker">ZOHD · House of Sustainables</span>
+      <div class="story-copy">
+        <h2>A thoughtful store, managed with care.</h2>
+        <p>Manage products, orders, and delivery settings from one place.</p>
+      </div>
+      <span class="story-note">Thoughtful essentials for everyday routines</span>
+    </section>
+    <section class="login-form-panel" aria-labelledby="admin-login-title">
+      <a class="brand-logo" href="/index.html" aria-label="ZOHD home">
+        <img src="/images/zohd-mark.png" alt="" />
+        <span aria-hidden="true">ZOHD</span>
+      </a>
+      <p class="form-kicker">Admin portal</p>
+      <h1 id="admin-login-title">Welcome back</h1>
+      <p class="form-intro">Sign in to manage your ZOHD store.</p>
+      <form id="admin-login-form">
+        <div class="form-field">
+          <label for="admin-id">Admin ID</label>
+          <input id="admin-id" name="adminId" autocomplete="username" required />
+        </div>
+        <div class="form-field">
+          <label for="admin-password">Password</label>
+          <input id="admin-password" name="password" type="password" autocomplete="current-password" required />
+        </div>
+        <button id="submit-button" type="submit">Sign in</button>
+        <div id="login-error" role="alert" aria-live="polite"></div>
+      </form>
+      <a class="store-link" href="/index.html">Back to store</a>
+    </section>
   </main>
   <script>
     document.getElementById("admin-login-form").addEventListener("submit", async event => {

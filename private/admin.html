@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ZOHD Admin Portal | Control Center</title>
+  <link rel="icon" type="image/png" href="/images/zohd-mark.png" />
   
   <!-- Google Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,55 +17,95 @@
       --primary-green: #1c3b2b;
       --primary-light: #2c5942;
       --accent-beige: #f5f0eb;
-      --accent-gold: #c29b68;
+      --accent-gold: #9a7448;
       --text-dark: #1e2421;
       --text-light: #626d66;
       --bg-light: #fcfbfa;
       --white: #ffffff;
       --border-color: #e5dec9;
-      --radius: 16px;
+      --radius: 14px;
       --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.04);
       --shadow-lg: 0 15px 35px rgba(28, 59, 43, 0.1);
-      --transition: all 0.3s ease;
+      --transition: all 0.24s ease;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-    body { background-color: var(--bg-light); color: var(--text-dark); line-height: 1.6; min-height: 100vh; display: flex; flex-direction: column; }
+    body {
+      background:
+        radial-gradient(ellipse at 10% 0, rgba(154, 116, 72, 0.08), transparent 30rem),
+        linear-gradient(180deg, var(--accent-beige) 0, var(--bg-light) 22rem);
+      color: var(--text-dark);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    :focus-visible { outline: 3px solid var(--accent-gold); outline-offset: 3px; }
 
     /* NAVBAR */
     .admin-navbar {
-      background: var(--primary-green);
-      color: var(--white);
-      padding: 1rem 2rem;
-      border-bottom: 2px solid var(--accent-gold);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.97);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(28, 59, 43, 0.08);
+      padding: 0.7rem 0;
     }
 
     .admin-nav-container {
-      max-width: 1280px;
+      max-width: 1360px;
       margin: 0 auto;
+      padding: 0 clamp(1rem, 2vw, 2rem);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 1rem;
     }
 
-    .brand-logo { text-decoration: none; display: flex; align-items: center; justify-content: center; }
-    .brand-logo-image { display: block; width: clamp(170px, 18vw, 220px); height: auto; }
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.2rem;
+      text-decoration: none;
+      min-width: 0;
+      flex-shrink: 0;
+    }
+
+    .brand-logo-image {
+      display: block;
+      width: clamp(76px, 7vw, 96px);
+      height: auto;
+      filter: drop-shadow(0 4px 10px rgba(28, 59, 43, 0.08));
+    }
+
+    .brand-logo-text {
+      color: #49321f;
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.3rem, 1.8vw, 1.6rem);
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      line-height: 1;
+      white-space: nowrap;
+    }
 
     .nav-link-btn {
-      color: var(--white);
+      color: var(--primary-green);
       text-decoration: none;
       font-weight: 600;
       font-size: 0.9rem;
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(28, 59, 43, 0.12);
+      background: transparent;
       padding: 0.5rem 1.2rem;
       border-radius: 30px;
       transition: var(--transition);
     }
 
-    .nav-link-btn:hover { background: rgba(255, 255, 255, 0.2); }
+    .nav-link-btn:hover { background: var(--accent-beige); }
 
     /* CONTAINER */
     .admin-container {
@@ -98,16 +139,16 @@
     .form-group input:focus { border-color: var(--primary-green); box-shadow: 0 0 0 3px rgba(28, 59, 43, 0.1); }
 
     .btn {
-      padding: 0.85rem 1.8rem;
+      padding: 0.75rem 1.5rem;
       border-radius: 30px;
-      font-weight: 700;
+      font-weight: 600;
       cursor: pointer;
       border: none;
       transition: var(--transition);
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 0.6rem;
+      gap: 0.5rem;
       text-decoration: none;
     }
 
@@ -157,7 +198,7 @@
     .metric-card h4 { font-size: 0.85rem; text-transform: uppercase; color: var(--text-light); letter-spacing: 1px; }
     .metric-card p { font-size: 2.5rem; font-weight: 800; color: var(--primary-green); margin-top: 0.3rem; }
     .dashboard-overview-grid { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(240px, 0.8fr); gap: 1.5rem; }
-    .dashboard-section { padding: 1.4rem; border: 1px solid var(--border-color); border-radius: var(--radius); background: var(--white); }
+    .dashboard-section { padding: 1.4rem; border: 1px solid var(--border-color); border-radius: var(--radius); background: var(--white); box-shadow: var(--shadow-sm); }
     .dashboard-section h3 { color: var(--primary-green); margin-bottom: 0.8rem; }
     .sales-trend { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); align-items: end; gap: 0.7rem; min-height: 170px; margin-top: 1rem; }
     .sales-trend-day { display: grid; grid-template-rows: 1fr auto auto; align-items: end; gap: 0.35rem; height: 150px; text-align: center; font-size: 0.75rem; color: var(--text-light); }
@@ -316,7 +357,7 @@
     .product-form-dialog .form-group input:focus,
     .product-form-dialog .form-group select:focus,
     .product-form-dialog .form-group textarea:focus {
-      outline: 3px solid rgba(194, 155, 104, 0.2);
+      outline: 3px solid rgba(154, 116, 72, 0.2);
       border-color: var(--accent-gold);
     }
 
@@ -360,14 +401,17 @@
     }
 
     .btn-secondary {
-      padding: 0.85rem 1.4rem;
-      border: 1px solid var(--border-color);
+      padding: 0.75rem 1.5rem;
+      border: 2px solid var(--primary-green);
       border-radius: 30px;
-      background: var(--white);
-      color: var(--text-dark);
-      font-weight: 700;
+      background: transparent;
+      color: var(--primary-green);
+      font-weight: 600;
       cursor: pointer;
+      transition: var(--transition);
     }
+
+    .btn-secondary:hover { background: var(--accent-beige); }
 
     .btn:disabled,
     .btn-secondary:disabled {
@@ -409,8 +453,7 @@
       .admin-toolbar label { flex: 1 1 190px; }
       .admin-toolbar label input, .admin-toolbar label select { width: 100%; }
       .dashboard-section { min-width: 0; padding: 1rem; }
-      .admin-navbar { padding: 0.75rem 1rem; }
-      .brand-logo-image { width: clamp(125px, 36vw, 180px); }
+      .brand-logo-image { width: 76px; }
       .nav-link-btn { padding: 0.5rem 0.75rem; font-size: 0.78rem; }
       .dashboard-header .btn { flex-shrink: 0; padding: 0.7rem 1rem; }
       .tabs-navigation { margin-bottom: 1.2rem; }
@@ -421,9 +464,12 @@
     }
 
     @media (max-width: 420px) {
+      .admin-nav-container { gap: 0.5rem; }
+      .nav-link-btn { gap: 0.35rem; padding: 0.45rem 0.55rem; font-size: 0.72rem; }
       .dashboard-panel { padding: 0.85rem; }
       .dashboard-header { flex-direction: column; }
       .dashboard-header .btn { align-self: stretch; justify-content: center; }
+      .brand-logo-text { font-size: 1.1rem; }
       .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; margin-bottom: 1.2rem; }
       .metric-card { padding: 0.8rem; }
       .metric-card h4 { font-size: 0.68rem; letter-spacing: 0.04em; }
@@ -440,6 +486,7 @@
     <div class="admin-nav-container">
       <a href="/index.html" class="brand-logo" aria-label="ZOHD home">
         <img src="/images/zohd-mark.png" alt="ZOHD logo mark" class="brand-logo-image" />
+        <span class="brand-logo-text" aria-hidden="true">ZOHD</span>
       </a>
       <a href="/index.html" class="nav-link-btn">
         <i class="fa-solid fa-store"></i> Back to Main Store
