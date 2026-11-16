@@ -187,7 +187,7 @@
         }
       } catch {
         error.textContent = window.location.protocol === "file:"
-          ? "Open the admin page through the app server, not as a file. Start the server with `npm start`, then visit http://127.0.0.1:3000/admin."
+          ? "Open the admin page through the app server, not as a file. In PowerShell, run `npm.cmd start`, then visit http://127.0.0.1:3000/admin."
           : "Unable to contact the login service. Make sure the app server is running, then try again.";
       } finally {
         button.disabled = false;
